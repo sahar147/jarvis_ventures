@@ -23,16 +23,16 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
     try:
         if signal["side"] == "long":
             arah = "LONG"
-            sl_price = signal["entry_price"] * 0.97
-            tp_price = signal["entry_price"] * 1.06
-            sl_pct = "-3%"
-            tp_pct = "+6%"
+            sl_price = signal["entry_price"] * 0.98
+            tp_price = signal["entry_price"] * 1.04
+            sl_pct = "-2%"
+            tp_pct = "+4%"
         else:
             arah = "SHORT"
-            sl_price = signal["entry_price"] * 1.03
-            tp_price = signal["entry_price"] * 0.94
-            sl_pct = "+3%"
-            tp_pct = "-6%"
+            sl_price = signal["entry_price"] * 1.02
+            tp_price = signal["entry_price"] * 0.96
+            sl_pct = "+2%"
+            tp_pct = "-4%"
 
         slope_emoji = "▲" if signal["side"] == "long" else "▼"
         regime_text = "🟢 BULL" if signal.get("regime_bull", True) else "🔴 BEAR"
@@ -105,8 +105,8 @@ class TrendPullbackStrategy(IStrategy):
     INTERFACE_VERSION = 3
     can_short: bool = True
     timeframe = "5m"
-    minimal_roi = {"0": 0.60}
-    stoploss = -0.30
+    minimal_roi = {"0": 0.80}
+    stoploss = -0.40
     trailing_stop = False
     trailing_stop_positive = 0.0
     trailing_stop_positive_offset = 0.0
@@ -148,7 +148,7 @@ class TrendPullbackStrategy(IStrategy):
     def leverage(self, pair: str, current_time, current_rate: float,
                  proposed_leverage: float, max_leverage: float,
                  entry_tag, side: str, **kwargs) -> float:
-        return 10.0
+        return 20.0
 
     def is_trading_time(self) -> bool:
         hour = datetime.now(timezone.utc).hour
@@ -278,14 +278,12 @@ class TrendPullbackStrategy(IStrategy):
             (dataframe["low"] <= dataframe["ema21"]) &
             (dataframe["close"] > dataframe["ema21"]) &
             (dataframe["close"] > dataframe["open"]) &
-            (dataframe["ema21_slope"] > 0) &
             (dataframe["ema_gap"] > dataframe["close"] * 0.002)
         )
         dataframe["pullback_short"] = (
             (dataframe["high"] >= dataframe["ema21"]) &
             (dataframe["close"] < dataframe["ema21"]) &
             (dataframe["close"] < dataframe["open"]) &
-            (dataframe["ema21_slope"] < 0) &
             (dataframe["ema_gap"] > dataframe["close"] * 0.002)
         )
         return dataframe
@@ -296,31 +294,31 @@ class TrendPullbackStrategy(IStrategy):
         if "market_bear" in dataframe.columns:
             long_threshold = 5
 
+        # LONG searah BTC (bull)
         dataframe.loc[
             (
                 (dataframe["pullback_long"]) &
                 (dataframe["adx"] > 23) &
-                (dataframe["volume"] > dataframe["volume"].rolling(5).mean()) &
-                (dataframe["ema50_1h"] > dataframe["ema200_1h"]) &
-                (dataframe["market_bull_btc"])
+                (dataframe["ema50_1h"] > dataframe["ema200_1h"])
             ),
             ["enter_long", "enter_tag"],
         ] = (1, "pullback_ma_long")
+
         # Bear market: score 4/6, Bull market: butuh 5/6
         short_threshold = self.score_threshold
         if "market_bull" in dataframe.columns:
             short_threshold = 5
 
+        # SHORT searah BTC (bear)
         dataframe.loc[
             (
                 (dataframe["pullback_short"]) &
                 (dataframe["adx"] > 23) &
-                (dataframe["volume"] > dataframe["volume"].rolling(5).mean()) &
-                (dataframe["ema50_1h"] < dataframe["ema200_1h"]) &
-                (dataframe["market_bear_btc"])
+                (dataframe["ema50_1h"] < dataframe["ema200_1h"])
             ),
             ["enter_short", "enter_tag"],
         ] = (1, "pullback_ma_short")
+
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
@@ -331,6 +329,18 @@ class TrendPullbackStrategy(IStrategy):
     def confirm_trade_entry(self, pair: str, order_type: str, amount: float,
                             rate: float, time_in_force: str, entry_tag: str,
                             side: str, **kwargs) -> bool:
+        # Cek minimum leverage 20x
+        try:
+            import requests as _req
+            symbol = pair.replace("/", "").replace(":USDT", "")
+            resp = _req.get(f"https://fapi.binance.com/fapi/v1/leverageBracket?symbol={symbol}", timeout=5)
+            brackets = resp.json()
+            max_lev = brackets[0]["brackets"][0]["initialLeverage"]
+            if max_lev < 20:
+                print(f"[LevFilter] Skip {pair} — max leverage {max_lev}x < 20x")
+                return False
+        except Exception as e:
+            print(f"[LevFilter] Error cek leverage {pair}: {e}")
 
         # Block entry di jam sepi
         # Load settings
