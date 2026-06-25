@@ -288,7 +288,7 @@ class TrendPullbackStrategy(IStrategy):
                 (dataframe["adx"] > 23) &
                 (dataframe["volume"] > dataframe["volume"].rolling(5).mean()) &
                 (dataframe["ema50_1h"] > dataframe["ema200_1h"]) &
-                (dataframe["market_bull_btc"] | (dataframe["bull_score"] >= 5))
+                (dataframe["market_bull_btc"])
             ),
             ["enter_long", "enter_tag"],
         ] = (1, "pullback_ma_long")
@@ -303,7 +303,7 @@ class TrendPullbackStrategy(IStrategy):
                 (dataframe["adx"] > 23) &
                 (dataframe["volume"] > dataframe["volume"].rolling(5).mean()) &
                 (dataframe["ema50_1h"] < dataframe["ema200_1h"]) &
-                (dataframe["market_bear_btc"] | (dataframe["bear_score"] >= 5))
+                (dataframe["market_bear_btc"])
             ),
             ["enter_short", "enter_tag"],
         ] = (1, "pullback_ma_short")
