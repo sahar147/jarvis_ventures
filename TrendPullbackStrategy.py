@@ -341,17 +341,12 @@ class TrendPullbackStrategy(IStrategy):
             if dataframe is None or dataframe.empty:
                 return True
             last = dataframe.iloc[-1]
-            if side == "long":
-                trend_score = int(last.get("bull_score", 0))
-            else:
-                trend_score = int(last.get("bear_score", 0))
             signal = {
                 "pair": pair,
                 "side": side,
                 "entry_price": rate,
                 "adx": float(last.get("adx", 0)),
                 "rsi": float(last.get("rsi", 0)),
-                "trend_score": trend_score,
             }
             if self.tg_token and self.tg_chat_id:
                 send_telegram_signal(self.tg_token, self.tg_chat_id, signal)
