@@ -4,7 +4,7 @@ Bot trading Freqtrade otomatis untuk Binance Futures.
 Strategi: TrendPullbackStrategy
 
 ## Channel Telegram
-@badutkota147
+@badut_kota
 
 ## Filter Entry
 1. EMA50 > EMA200 H1 → konfirmasi trend
