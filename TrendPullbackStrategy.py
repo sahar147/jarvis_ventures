@@ -34,12 +34,20 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
             sl_pct = "+3%"
             tp_pct = "-6%"
 
+        slope_emoji = "▲" if signal["side"] == "long" else "▼"
+        regime_text = "🟢 BULL" if signal.get("regime_bull", True) else "🔴 BEAR"
+
         pesan = (
             f"⚡ *ENTRY — JARVIS*\n"
             f"📌 *{signal['pair']}* {arah}\n"
             f"💰 Entry: `{signal['entry_price']:.4f} USDT`\n"
             f"🛡 SL: `{sl_price:.4f} USDT` ({sl_pct})\n"
-            f"🎯 TP: `{tp_price:.4f} USDT` ({tp_pct})"
+            f"🎯 TP: `{tp_price:.4f} USDT` ({tp_pct})\n"
+            f"📊 ADX: `{signal['adx']:.1f}` | Slope: {slope_emoji} | Gap: ✅\n"
+            f"🌍 Regime: {regime_text}\n"
+            f"━━━━━━━━━━━━━━━━━━\n"
+            f"🤖 *Jarvis* x *Badut Kota*\n"
+            f"👤 Owner: _{settings.get("owner_name", "Pakdendam")}_"
         )
         url = f"https://api.telegram.org/bot{token}/sendMessage"
         resp = requests.post(url, json={"chat_id": chat_id, "text": pesan, "parse_mode": "Markdown"}, timeout=10)
@@ -75,12 +83,14 @@ def send_telegram_exit(token: str, chat_id: str, exit_info: dict):
         else:
             judul = "🔚 *CLOSED*"
             hasil_emoji = "🔄"
-
         pesan = (
             f"{judul}\n"
             f"📌 *{pair}* {arah}\n"
             f"💰 `{open_rate:.4f}` → `{close_rate:.4f} USDT`\n"
-            f"{hasil_emoji} `{profit_sign}{profit_display:.2f}%` harga | `{profit_sign}{profit_pct:.2f}%` modal"
+            f"{hasil_emoji} `{profit_sign}{profit_display:.2f}%` harga | `{profit_sign}{profit_pct:.2f}%` margin\n"
+            f"━━━━━━━━━━━━━━━━━━\n"
+            f"🤖 *Jarvis* x *Badut Kota*\n"
+            f"👤 Owner: _{settings.get("owner_name", "Pakdendam")}_"
         )
         url = f"https://api.telegram.org/bot{token}/sendMessage"
         resp = requests.post(url, json={"chat_id": chat_id, "text": pesan, "parse_mode": "Markdown"}, timeout=10)
