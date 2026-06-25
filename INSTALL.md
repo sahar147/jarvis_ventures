@@ -249,4 +249,21 @@ Update file tanpa nano:
 
 ---
 
+## UPDATE STRATEGI TERBARU
+
+Kalau ada update dari repo, jalankan:
+
+    cd ~/freqtrade/user_data/strategies
+    curl -O https://raw.githubusercontent.com/sahar147/jarvis_ventures/main/TrendPullbackStrategy.py
+    cd ~/freqtrade && docker compose restart freqtrade
+
+Atau kalau clone full repo:
+
+    cd ~/jarvis_ventures
+    git pull origin main
+    cp TrendPullbackStrategy.py ~/freqtrade/user_data/strategies/
+    cd ~/freqtrade && docker compose restart freqtrade
+
+---
+
 Jarvis Ventures - AI Trading Bot x Badut Kota
