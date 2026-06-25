@@ -243,6 +243,22 @@ class TrendPullbackStrategy(IStrategy):
         # EMA21 slope filter (EMA21 harus miring)
         dataframe["ema21_slope"] = dataframe["ema21"] - dataframe["ema21"].shift(3)
 
+        # Market Regime Detection via BTC EMA200 1D
+        try:
+            import requests as _req
+            price_resp = _req.get("https://fapi.binance.com/fapi/v1/ticker/price?symbol=BTCUSDT", timeout=5)
+            btc_price = float(price_resp.json()["price"])
+            kline_resp = _req.get("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1d&limit=201", timeout=5)
+            closes = [float(k[4]) for k in kline_resp.json()]
+            import pandas as _pd
+            ema200_btc = float(_pd.Series(closes).ewm(span=200, adjust=False).mean().iloc[-1])
+            is_bull = btc_price > ema200_btc
+            dataframe["market_bull_btc"] = is_bull
+            dataframe["market_bear_btc"] = not is_bull
+        except:
+            dataframe["market_bull_btc"] = True
+            dataframe["market_bear_btc"] = True
+
         # Anti chop: EMA21 dan EMA50 harus cukup jauh
         dataframe["ema_gap"] = abs(dataframe["ema21"] - dataframe["ema50"])
 
@@ -271,7 +287,8 @@ class TrendPullbackStrategy(IStrategy):
                 (dataframe["pullback_long"]) &
                 (dataframe["adx"] > 23) &
                 (dataframe["volume"] > dataframe["volume"].rolling(5).mean()) &
-                (dataframe["ema50_1h"] > dataframe["ema200_1h"])
+                (dataframe["ema50_1h"] > dataframe["ema200_1h"]) &
+                (dataframe["market_bull_btc"] | (dataframe["bull_score"] >= 5))
             ),
             ["enter_long", "enter_tag"],
         ] = (1, "pullback_ma_long")
@@ -285,7 +302,8 @@ class TrendPullbackStrategy(IStrategy):
                 (dataframe["pullback_short"]) &
                 (dataframe["adx"] > 23) &
                 (dataframe["volume"] > dataframe["volume"].rolling(5).mean()) &
-                (dataframe["ema50_1h"] < dataframe["ema200_1h"])
+                (dataframe["ema50_1h"] < dataframe["ema200_1h"]) &
+                (dataframe["market_bear_btc"] | (dataframe["bear_score"] >= 5))
             ),
             ["enter_short", "enter_tag"],
         ] = (1, "pullback_ma_short")
