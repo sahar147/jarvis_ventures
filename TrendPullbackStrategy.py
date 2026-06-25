@@ -241,7 +241,6 @@ class TrendPullbackStrategy(IStrategy):
             dataframe["market_bear"] = True
 
         # EMA21 slope filter (EMA21 harus miring)
-        dataframe["ema21_slope"] = dataframe["ema21"] - dataframe["ema21"].shift(3)
 
         # Market Regime Detection via BTC EMA200 1D
         try:
@@ -259,6 +258,9 @@ class TrendPullbackStrategy(IStrategy):
             dataframe["market_bull_btc"] = True
             dataframe["market_bear_btc"] = True
 
+        # EMA21 slope filter
+        dataframe["ema21_slope"] = dataframe["ema21"] - dataframe["ema21"].shift(3)
+
         # Anti chop: EMA21 dan EMA50 harus cukup jauh
         dataframe["ema_gap"] = abs(dataframe["ema21"] - dataframe["ema50"])
 
@@ -266,12 +268,14 @@ class TrendPullbackStrategy(IStrategy):
             (dataframe["low"] <= dataframe["ema21"]) &
             (dataframe["close"] > dataframe["ema21"]) &
             (dataframe["close"] > dataframe["open"]) &
+            (dataframe["ema21_slope"] > 0) &
             (dataframe["ema_gap"] > dataframe["close"] * 0.002)
         )
         dataframe["pullback_short"] = (
             (dataframe["high"] >= dataframe["ema21"]) &
             (dataframe["close"] < dataframe["ema21"]) &
             (dataframe["close"] < dataframe["open"]) &
+            (dataframe["ema21_slope"] < 0) &
             (dataframe["ema_gap"] > dataframe["close"] * 0.002)
         )
         return dataframe
