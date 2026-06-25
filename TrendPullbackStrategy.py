@@ -252,21 +252,7 @@ class TrendPullbackStrategy(IStrategy):
 
         # EMA21 slope filter (EMA21 harus miring)
 
-        # Market Regime Detection via BTC EMA200 1D
-        try:
-            import requests as _req
-            price_resp = _req.get("https://fapi.binance.com/fapi/v1/ticker/price?symbol=BTCUSDT", timeout=5)
-            btc_price = float(price_resp.json()["price"])
-            kline_resp = _req.get("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1d&limit=201", timeout=5)
-            closes = [float(k[4]) for k in kline_resp.json()]
-            import pandas as _pd
-            ema200_btc = float(_pd.Series(closes).ewm(span=200, adjust=False).mean().iloc[-1])
-            is_bull = btc_price > ema200_btc
-            dataframe["market_bull_btc"] = is_bull
-            dataframe["market_bear_btc"] = not is_bull
-        except:
-            dataframe["market_bull_btc"] = True
-            dataframe["market_bear_btc"] = True
+
 
         # EMA21 slope filter
         dataframe["ema21_slope"] = dataframe["ema21"] - dataframe["ema21"].shift(3)
@@ -289,11 +275,6 @@ class TrendPullbackStrategy(IStrategy):
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        # Bull market: score 4/6, Bear market: butuh 5/6
-        long_threshold = self.score_threshold
-        if "market_bear" in dataframe.columns:
-            long_threshold = 5
-
         # LONG searah BTC (bull)
         dataframe.loc[
             (
@@ -304,10 +285,6 @@ class TrendPullbackStrategy(IStrategy):
             ["enter_long", "enter_tag"],
         ] = (1, "pullback_ma_long")
 
-        # Bear market: score 4/6, Bull market: butuh 5/6
-        short_threshold = self.score_threshold
-        if "market_bull" in dataframe.columns:
-            short_threshold = 5
 
         # SHORT searah BTC (bear)
         dataframe.loc[
