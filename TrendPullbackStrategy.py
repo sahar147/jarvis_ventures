@@ -331,8 +331,6 @@ class TrendPullbackStrategy(IStrategy):
     def confirm_trade_entry(self, pair: str, order_type: str, amount: float,
                             rate: float, time_in_force: str, entry_tag: str,
                             side: str, **kwargs) -> bool:
-        # Cek session notice
-        self.check_session_notice()
 
         # Block entry di jam sepi
         # Load settings
@@ -342,6 +340,10 @@ class TrendPullbackStrategy(IStrategy):
                 settings = _json.load(f)
         except:
             settings = {"time_filter": False, "smart_exit": False}
+
+        # Cek session notice hanya kalau time_filter aktif
+        if settings.get("time_filter", False):
+            self.check_session_notice()
 
         if settings.get("time_filter", False) and not self.is_trading_time():
             print(f"[TimeFilter] Skip entry {pair} — jam sepi")
