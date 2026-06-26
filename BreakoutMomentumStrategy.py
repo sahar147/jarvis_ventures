@@ -191,7 +191,7 @@ class TrendPullbackStrategy(IStrategy):
                     f"🔴 *SESI SKIP ENTRY — JARVIS*\n"
                     f"━━━━━━━━━━━━━━━━━━\n"
                     f"⏰ *Waktu:* `{waktu_utc}` | `{waktu_wib}`\n"
-                    f"📊 *Status:* Bot standby, hindari jam sepi\n"
+                    f"📊 *Status:* Bot standby, sesi asia sepi mendingan tidur dulu sayangi modal\n"
                     f"🕐 *Sesi skip:* `04.00 - 10.00 WIB`\n"
                     f"━━━━━━━━━━━━━━━━━━\n"
                     f"🤖 *Jarvis* — _AI Trading Bot_\n"
@@ -308,6 +308,22 @@ class TrendPullbackStrategy(IStrategy):
         dataframe.loc[:, "exit_long"] = 0
         dataframe.loc[:, "exit_short"] = 0
         return dataframe
+
+    def custom_stake_amount(self, current_time, current_rate, current_profit,
+                            proposed_stake, min_stake, max_stake, leverage,
+                            entry_tag, side, **kwargs) -> float:
+        try:
+            balance = self.wallets.get_total_stake_amount()
+            if balance >= 50:
+                # Risk 5% saldo
+                stake = balance * 0.333
+            else:
+                # Risk 10% saldo
+                stake = balance * 0.667
+            return max(min_stake, min(stake, max_stake))
+        except Exception as e:
+            print(f"[StakeAmount] Error: {e}")
+            return proposed_stake
 
     def confirm_trade_entry(self, pair: str, order_type: str, amount: float,
                             rate: float, time_in_force: str, entry_tag: str,
