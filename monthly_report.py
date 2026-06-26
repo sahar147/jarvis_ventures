@@ -145,7 +145,9 @@ def send_monthly_report():
         f"{pair_detail if pair_detail else '  _Tidak ada trade_'}"
         f"━━━━━━━━━━━━━━━━━━\n"
         f"🤖 *Jarvis* — _AI Trading Bot_\n"
-        f"🎪 *Badut Kota* — _@badutkota147_"
+        f"🎪 *Badut Kota* — _@badutkota147_\n"
+        f"👤 *Owner:* _Pakdendam_\n"
+        f"📦 *Repo:* [jarvis\_ventures](https://github.com/sahar147/jarvis_ventures)"
     )
     send_telegram(pesan, pin=True)
 
@@ -206,7 +208,9 @@ def send_hall_of_fame():
         f"💵 *PnL:* `+{profit_abs:.4f} USDT`\n"
         f"━━━━━━━━━━━━━━━━━━\n"
         f"🤖 *Jarvis* — _AI Trading Bot_\n"
-        f"🎪 *Badut Kota* — _@badutkota147_"
+        f"🎪 *Badut Kota* — _@badutkota147_\n"
+        f"👤 *Owner:* _Pakdendam_\n"
+        f"📦 *Repo:* [jarvis\_ventures](https://github.com/sahar147/jarvis_ventures)"
     )
     send_telegram(pesan)
 

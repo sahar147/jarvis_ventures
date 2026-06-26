@@ -70,7 +70,9 @@ def send_drawdown_alert(current, peak, drawdown_pct, drawdown_display):
         f"━━━━━━━━━━━━━━━━━━\n"
         f"🕐 *Waktu:* `{waktu}`\n"
         f"🤖 *Jarvis* — _AI Trading Bot_\n"
-        f"🎪 *Badut Kota* — _@badutkota147_"
+        f"🎪 *Badut Kota* — _@badutkota147_\n"
+        f"👤 *Owner:* _Pakdendam_\n"
+        f"📦 *Repo:* [jarvis\_ventures](https://github.com/sahar147/jarvis_ventures)"
     )
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
     resp = requests.post(url, json={"chat_id": CHAT_ID, "text": pesan, "parse_mode": "Markdown"}, timeout=10)
@@ -164,7 +166,9 @@ def send_weekly_report():
         f"{detail}"
         f"━━━━━━━━━━━━━━━━━━\n"
         f"🤖 *Jarvis* — _AI Trading Bot_\n"
-        f"🎪 *Badut Kota* — _@badutkota147_"
+        f"🎪 *Badut Kota* — _@badutkota147_\n"
+        f"👤 *Owner:* _Pakdendam_\n"
+        f"📦 *Repo:* [jarvis\_ventures](https://github.com/sahar147/jarvis_ventures)"
     )
 
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
