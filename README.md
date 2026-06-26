@@ -1,42 +1,55 @@
-# 🤖 Jarvis Ventures — Auto Trading Bot
+# 🤖 Jarvis Ventures — Automated Crypto Futures Trading Bot
 
-Bot trading Freqtrade otomatis untuk Binance Futures.
-Strategi: TrendPullbackStrategy
+Bot trading otomatis berbasis **Freqtrade** untuk **Binance Futures** dengan strategi **Breakout Momentum**.
 
-## Channel Telegram
-@badut_kota → https://t.me/badut_kota
+---
 
-## Filter Entry
-1. EMA50 > EMA200 H1 → konfirmasi trend
-2. Pullback ke EMA21 → entry di support/resistance
-3. EMA gap > close x 0.002 → anti chop
-4. ADX > 23 → trend kuat
-5. Volume > MA5 → ada momentum
-6. Market Regime BTC EMA200 1D → ikut tren besar
+## 📡 Ikuti Channel Signal Kami
 
-## Risk Management
-- SL: -2% harga = -20% modal
-- TP: +4% harga = +40% modal
-- RR: 1:2
-- Leverage: 20x Isolated
-- Ratio: 0.125
+> ⚠️ **WAJIB** ikuti channel Telegram kami untuk mendapatkan sinyal trading real-time!
 
-## Panduan Pemasangan
-Lihat INSTALL.md
+### 👉 [t.me/badut_kota](https://t.me/badut_kota)
 
-## Update Strategi Terbaru
-    cd ~/freqtrade/user_data/strategies
-    curl -O https://raw.githubusercontent.com/sahar147/jarvis_ventures/main/TrendPullbackStrategy.py
-    cd ~/freqtrade && docker compose restart freqtrade
+Channel berisi:
+- ⚡ Notif Entry real-time
+- 🎯 Notif TP Hit / 🛑 SL Hit
+- 📊 Daily, Weekly, Monthly Report
+- 🤖 Powered by Jarvis AI Trading Bot
 
-## Struktur File
-- TrendPullbackStrategy.py → strategi utama
-- config.json → contoh konfigurasi
-- daily_report.py → laporan harian
-- weekly_report.py → laporan mingguan
-- monthly_report.py → laporan bulanan
-- balance_alert.py → alert saldo minimum
-- jarvis_settings.json → settings tanpa restart
-- INSTALL.md → panduan pemasangan lengkap
+---
 
-Jarvis Ventures — AI Trading Bot x Badut Kota 🤖🎪
+## 📌 Strategi: Breakout Momentum
+
+**Timeframe:** 5m (konfirmasi H1)
+
+**Filter Entry:**
+- EMA50 > EMA200 di H1 (trend filter)
+- Close > High 20 candle lalu (LONG) / Close < Low 20 candle lalu (SHORT)
+- Volume > MA20
+- ATR > 0.0025
+- ADX > 20
+- Min leverage pair: 10x
+
+**Risk Management:**
+- Leverage: 10x Cross margin
+- SL: -1.5% harga
+- TP: +3% harga (RR 1:2)
+- Saldo < $50 → Risk 10% per trade
+- Saldo ≥ $50 → Risk 5% per trade
+
+---
+
+## ⚙️ Setup
+
+1. Install Freqtrade
+2. Clone repo ini
+3. Isi config.json dengan API key Binance
+4. Isi token dan chat_id Telegram
+5. Jalankan bot
+
+```bash
+docker compose up -d
+⚠️ Disclaimer
+Trading futures mengandung risiko tinggi. Gunakan dengan bijak. Hasil masa lalu tidak menjamin hasil masa depan.
+🤖 Jarvis — AI Trading Bot
+🎪 Badut Kota — @badutkota147
