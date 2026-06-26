@@ -1,6 +1,0 @@
-{
-    "time_filter": false,
-    "smart_exit": false,
-    "comment": "time_filter: true=aktif jam 03-21 UTC, false=24 jam | smart_exit: true=aktif jam 21 UTC, false=off",
-    "owner_name": "Pakdendam"
-}
