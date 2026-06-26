@@ -105,8 +105,8 @@ class TrendPullbackStrategy(IStrategy):
     INTERFACE_VERSION = 3
     can_short: bool = True
     timeframe = "5m"
-    minimal_roi = {"0": 0.80}
-    stoploss = -0.40
+    minimal_roi = {"0": 1.50}
+    stoploss = -0.75
     trailing_stop = False
     trailing_stop_positive = 0.0
     trailing_stop_positive_offset = 0.0
@@ -148,7 +148,7 @@ class TrendPullbackStrategy(IStrategy):
     def leverage(self, pair: str, current_time, current_rate: float,
                  proposed_leverage: float, max_leverage: float,
                  entry_tag, side: str, **kwargs) -> float:
-        return 20.0
+        return 50.0
 
     def is_trading_time(self) -> bool:
         hour = datetime.now(timezone.utc).hour
@@ -313,7 +313,7 @@ class TrendPullbackStrategy(IStrategy):
             resp = _req.get(f"https://fapi.binance.com/fapi/v1/leverageBracket?symbol={symbol}", timeout=5)
             brackets = resp.json()
             max_lev = brackets[0]["brackets"][0]["initialLeverage"]
-            if max_lev < 20:
+            if max_lev < 50:
                 print(f"[LevFilter] Skip {pair} — max leverage {max_lev}x < 20x")
                 return False
         except Exception as e:
