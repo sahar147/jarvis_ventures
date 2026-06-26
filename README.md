@@ -53,3 +53,4 @@ docker compose up -d
 Trading futures mengandung risiko tinggi. Gunakan dengan bijak. Hasil masa lalu tidak menjamin hasil masa depan.
 🤖 Jarvis — AI Trading Bot
 🎪 Badut Kota — @badutkota147
+👤 **Owner** — *Pakdendam*
