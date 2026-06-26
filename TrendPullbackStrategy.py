@@ -47,7 +47,7 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
             f"🌍 Regime: {regime_text}\n"
             f"━━━━━━━━━━━━━━━━━━\n"
             f"🤖 *Jarvis* x *Badut Kota*\n"
-            f"👤 Owner: _{settings.get('owner_name', 'Pakdendam')}_"
+            f"👤 Owner: _Pakdendam_"
         )
         url = f"https://api.telegram.org/bot{token}/sendMessage"
         resp = requests.post(url, json={"chat_id": chat_id, "text": pesan, "parse_mode": "Markdown"}, timeout=10)
@@ -90,7 +90,7 @@ def send_telegram_exit(token: str, chat_id: str, exit_info: dict):
             f"{hasil_emoji} `{profit_sign}{profit_display:.2f}%` harga | `{profit_sign}{profit_pct:.2f}%` margin\n"
             f"━━━━━━━━━━━━━━━━━━\n"
             f"🤖 *Jarvis* x *Badut Kota*\n"
-            f"👤 Owner: _{settings.get('owner_name', 'Pakdendam')}_"
+            f"👤 Owner: _Pakdendam_"
         )
         url = f"https://api.telegram.org/bot{token}/sendMessage"
         resp = requests.post(url, json={"chat_id": chat_id, "text": pesan, "parse_mode": "Markdown"}, timeout=10)
@@ -105,8 +105,8 @@ class TrendPullbackStrategy(IStrategy):
     INTERFACE_VERSION = 3
     can_short: bool = True
     timeframe = "5m"
-    minimal_roi = {"0": 1.50}
-    stoploss = -0.75
+    minimal_roi = {"0": 0.30}
+    stoploss = -0.15
     trailing_stop = False
     trailing_stop_positive = 0.0
     trailing_stop_positive_offset = 0.0
@@ -148,7 +148,10 @@ class TrendPullbackStrategy(IStrategy):
     def leverage(self, pair: str, current_time, current_rate: float,
                  proposed_leverage: float, max_leverage: float,
                  entry_tag, side: str, **kwargs) -> float:
-        return 50.0
+        if max_leverage < 10:
+            print(f"[LevFilter] Skip {pair} — max leverage {max_leverage}x < 10x")
+            return 1.0
+        return 10.0
 
     def is_trading_time(self) -> bool:
         hour = datetime.now(timezone.utc).hour
@@ -309,39 +312,17 @@ class TrendPullbackStrategy(IStrategy):
     def confirm_trade_entry(self, pair: str, order_type: str, amount: float,
                             rate: float, time_in_force: str, entry_tag: str,
                             side: str, **kwargs) -> bool:
-        # Cek minimum leverage 20x
-        try:
-            info = self.dp.market(pair)
-            if info is None:
-                return False
-            max_lev = info.get("limits", {}).get("leverage", {}).get("max", 0)
-            if max_lev and max_lev < 50:
-                print(f"[LevFilter] Skip {pair} — max leverage {max_lev}x < 50x")
-                return False
-        except Exception as e:
-            print(f"[LevFilter] Error cek leverage {pair}: {e}")
-
-        # Block entry di jam sepi
-        # Load settings
         try:
             import json as _json
             with open("/freqtrade/user_data/jarvis_settings.json") as f:
                 settings = _json.load(f)
         except:
-            settings = {"time_filter": False, "smart_exit": False}
-
-        # Cek session notice hanya kalau time_filter aktif
-        if settings.get("time_filter", False):
-            self.check_session_notice()
-
+            settings = {"time_filter": False, "smart_exit": False, "owner_name": "Pakdendam"}
         if settings.get("time_filter", False) and not self.is_trading_time():
-            print(f"[TimeFilter] Skip entry {pair} — jam sepi")
+            print(f"[TimeFilter] Skip entry {pair}")
             return False
-
         try:
             dataframe, _ = self.dp.get_analyzed_dataframe(pair, self.timeframe)
-            if dataframe is None or dataframe.empty:
-                return True
             last = dataframe.iloc[-1]
             signal = {
                 "pair": pair,
@@ -351,18 +332,24 @@ class TrendPullbackStrategy(IStrategy):
             }
             if self.tg_token and self.tg_chat_id:
                 send_telegram_signal(self.tg_token, self.tg_chat_id, signal)
+                print(f"[Telegram Entry] Notif terkirim: {pair}")
         except Exception as e:
             print(f"[Telegram Entry] Error: {e}")
         return True
 
     def custom_exit(self, pair: str, trade, current_time, current_rate: float,
                     current_profit: float, **kwargs):
-        # Smart exit: kalau sudah 2 jam dan profit > 0, close
         return None
 
     def confirm_trade_exit(self, pair: str, trade, order_type: str, amount: float,
                            rate: float, time_in_force: str, exit_reason: str,
                            **kwargs) -> bool:
+        try:
+            import json as _json
+            with open("/freqtrade/user_data/jarvis_settings.json") as f:
+                settings = _json.load(f)
+        except:
+            settings = {"time_filter": False, "smart_exit": False, "owner_name": "Pakdendam"}
         try:
             if self.tg_token and self.tg_chat_id:
                 side = "short" if trade.is_short else "long"
