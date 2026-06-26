@@ -25,14 +25,14 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
             arah = "LONG"
             sl_price = signal["entry_price"] * 0.98
             tp_price = signal["entry_price"] * 1.04
-            sl_pct = "-2%"
-            tp_pct = "+4%"
+            sl_pct = "-1.5%"
+            tp_pct = "+3%"
         else:
             arah = "SHORT"
             sl_price = signal["entry_price"] * 1.02
             tp_price = signal["entry_price"] * 0.96
-            sl_pct = "+2%"
-            tp_pct = "-4%"
+            sl_pct = "+1.5%"
+            tp_pct = "-3%"
 
         slope_emoji = "▲" if signal["side"] == "long" else "▼"
         regime_text = "🟢 BULL" if signal.get("regime_bull", True) else "🔴 BEAR"
@@ -43,7 +43,7 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
             f"💰 Entry: `{signal['entry_price']:.4f} USDT`\n"
             f"🛡 SL: `{sl_price:.4f} USDT` ({sl_pct})\n"
             f"🎯 TP: `{tp_price:.4f} USDT` ({tp_pct})\n"
-            f"📊 ADX: `{signal['adx']:.1f}` | Slope: {slope_emoji} | Gap: ✅\n"
+            f"📊 ADX: `{signal['adx']:.1f}` | Vol: ✅ | ATR: ✅\n"
             f"🌍 Regime: {regime_text}\n"
             f"━━━━━━━━━━━━━━━━━━\n"
             f"🤖 *Jarvis* x *Badut Kota*\n"
