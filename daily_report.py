@@ -97,7 +97,7 @@ def send_market_regime():
         f"━━━━━━━━━━━━━━━━━━\n"
         f"🤖 *Jarvis* — _AI Trading Bot_\n"
         f"🎪 *Badut Kota* — _@badutkota147_\n"
-        f"📦 *Repo:* github.com/sahar147/jarvis\_ventures"
+        f"📦 *Repo:* [jarvis\_ventures](https://github.com/sahar147/jarvis_ventures)"
     )
 
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
@@ -226,7 +226,7 @@ def send_daily_report():
         f"━━━━━━━━━━━━━━━━━━\n"
         f"🤖 *Jarvis* — _AI Trading Bot_\n"
         f"🎪 *Badut Kota* — _@badutkota147_\n"
-        f"📦 *Repo:* github.com/sahar147/jarvis\_ventures"
+        f"📦 *Repo:* [jarvis\_ventures](https://github.com/sahar147/jarvis_ventures)"
     )
 
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
