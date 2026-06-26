@@ -6,7 +6,7 @@ Bot trading otomatis berbasis **Freqtrade** untuk **Binance Futures** dengan str
 
 ## 📡 Ikuti Channel Signal Kami
 
-> ⚠️ **WAJIB** ikuti channel Telegram kami untuk mendapatkan sinyal trading real-time!
+> ⚠️ **Sebelum menggunakan strategi ini, WAJIB ikuti channel Telegram kami terlebih dahulu untuk memantau performa bot secara real-time sebelum memutuskan untuk menggunakannya!**
 
 ### 👉 [t.me/badut_kota](https://t.me/badut_kota)
 
