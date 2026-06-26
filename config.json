@@ -116,13 +116,14 @@
         "process_throttle_secs": 5
     },
     "telegram_signal": {
-        "token": "1904228929:AAF8wE3Qc5P0AYL22xlLbG919AuubR3jtQs",
-        "chat_id": "-1003944452325"
+        "token": "YOUR_SIGNAL_BOT_TOKEN",
+        "chat_id": "YOUR_SIGNAL_CHAT_ID"
     },
     "order_types": {
         "entry": "limit",
         "exit": "market",
         "stoploss": "market",
         "stoploss_on_exchange": false
-    }
+    },
+    "strategy": "TrendPullbackStrategy"
 }

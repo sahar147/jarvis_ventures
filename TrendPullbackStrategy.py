@@ -47,7 +47,7 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
             f"🌍 Regime: {regime_text}\n"
             f"━━━━━━━━━━━━━━━━━━\n"
             f"🤖 *Jarvis* x *Badut Kota*\n"
-            f"👤 Owner: _{settings.get("owner_name", "Pakdendam")}_"
+            f"👤 Owner: _{settings.get('owner_name', 'Pakdendam')}_"
         )
         url = f"https://api.telegram.org/bot{token}/sendMessage"
         resp = requests.post(url, json={"chat_id": chat_id, "text": pesan, "parse_mode": "Markdown"}, timeout=10)
@@ -90,7 +90,7 @@ def send_telegram_exit(token: str, chat_id: str, exit_info: dict):
             f"{hasil_emoji} `{profit_sign}{profit_display:.2f}%` harga | `{profit_sign}{profit_pct:.2f}%` margin\n"
             f"━━━━━━━━━━━━━━━━━━\n"
             f"🤖 *Jarvis* x *Badut Kota*\n"
-            f"👤 Owner: _{settings.get("owner_name", "Pakdendam")}_"
+            f"👤 Owner: _{settings.get('owner_name', 'Pakdendam')}_"
         )
         url = f"https://api.telegram.org/bot{token}/sendMessage"
         resp = requests.post(url, json={"chat_id": chat_id, "text": pesan, "parse_mode": "Markdown"}, timeout=10)
