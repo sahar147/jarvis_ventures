@@ -1,7 +1,7 @@
 # Panduan Pemasangan Jarvis Ventures
 
-Repo: https://github.com/sahar147/jarvisventures_channel
-Update: 25 Juni 2026
+Repo: https://github.com/sahar147/jarvis_ventures
+Update: 27 Juni 2026
 
 ---
 
@@ -25,7 +25,7 @@ VPS Ubuntu minimal 2GB RAM
 
 ## LANGKAH 3 - CLONE REPO JARVIS
 
-    git clone https://github.com/sahar147/jarvisventures_channel.git /tmp/jarvis
+    git clone https://github.com/sahar147/jarvis_ventures.git /tmp/jarvis
     cp /tmp/jarvis/user_data/strategies/TrendPullbackStrategy.py ~/freqtrade/user_data/strategies/
     cp /tmp/jarvis/user_data/daily_report.py ~/freqtrade/user_data/
     cp /tmp/jarvis/user_data/weekly_report.py ~/freqtrade/user_data/
