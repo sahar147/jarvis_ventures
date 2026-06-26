@@ -311,15 +311,11 @@ class TrendPullbackStrategy(IStrategy):
                             side: str, **kwargs) -> bool:
         # Cek minimum leverage 20x
         try:
-            import requests as _req
-            symbol = pair.replace("/", "").replace(":USDT", "")
-            resp = _req.get(f"https://fapi.binance.com/fapi/v1/leverageBracket?symbol={symbol}", timeout=5)
-            brackets = resp.json()
-            if not brackets or not brackets[0].get("brackets"):
-                print(f"[LevFilter] Skip {pair} — no leverage bracket")
+            info = self.dp.market(pair)
+            if info is None:
                 return False
-            max_lev = brackets[0]["brackets"][0]["initialLeverage"]
-            if max_lev < 50:
+            max_lev = info.get("limits", {}).get("leverage", {}).get("max", 0)
+            if max_lev and max_lev < 50:
                 print(f"[LevFilter] Skip {pair} — max leverage {max_lev}x < 50x")
                 return False
         except Exception as e:
@@ -352,7 +348,6 @@ class TrendPullbackStrategy(IStrategy):
                 "side": side,
                 "entry_price": rate,
                 "adx": float(last.get("adx", 0)),
-                "rsi": float(last.get("rsi", 0)),
             }
             if self.tg_token and self.tg_chat_id:
                 send_telegram_signal(self.tg_token, self.tg_chat_id, signal)
