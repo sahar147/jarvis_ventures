@@ -100,6 +100,7 @@ def send_market_regime():
         f"📦 *Repo:* [jarvis\_ventures](https://github.com/sahar147/jarvis_ventures)"
     )
 
+    generate_equity_chart(trades, balance)
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
     resp = requests.post(url, json={"chat_id": CHAT_ID, "text": pesan, "parse_mode": "Markdown"}, timeout=10)
     if resp.status_code == 200:
@@ -134,6 +135,57 @@ def get_daily_stats():
     stats = cur.fetchone()
     conn.close()
     return trades, stats
+
+
+def generate_equity_chart(trades, current_balance):
+    try:
+        import matplotlib
+        matplotlib.use('Agg')
+        import matplotlib.pyplot as plt
+        import matplotlib.dates as mdates
+        from datetime import datetime
+        import io
+
+        if not trades or len(trades) < 2:
+            return
+
+        balance = current_balance
+        for t in reversed(trades):
+            balance -= t[1]
+
+        balances = [balance]
+        dates = [datetime.fromisoformat(trades[0][6].replace("+00:00", ""))]
+        for t in trades:
+            balance += t[1]
+            balances.append(balance)
+            dates.append(datetime.fromisoformat(t[6].replace("+00:00", "")))
+
+        fig, ax = plt.subplots(figsize=(10, 4))
+        fig.patch.set_facecolor("#1a1a2e")
+        ax.set_facecolor("#16213e")
+        color = "#00ff88" if balances[-1] >= balances[0] else "#ff4444"
+        ax.plot(dates, balances, color=color, linewidth=2)
+        ax.fill_between(dates, balances, balances[0], alpha=0.2, color=color)
+        ax.set_title("Equity Curve — Jarvis Ventures", color="white", fontsize=13)
+        ax.tick_params(colors="white")
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%d/%m"))
+        for spine in ax.spines.values():
+            spine.set_edgecolor("#333366")
+        ax.grid(True, alpha=0.2, color="white")
+
+        buf = io.BytesIO()
+        plt.savefig(buf, format="png", bbox_inches="tight", facecolor=fig.get_facecolor())
+        buf.seek(0)
+        plt.close()
+
+        requests.post(
+            f"https://api.telegram.org/bot{TOKEN}/sendPhoto",
+            data={"chat_id": CHAT_ID},
+            files={"photo": ("equity.png", buf, "image/png")},
+            timeout=15
+        )
+    except Exception as e:
+        print(f"[Chart] Error: {e}")
 
 def send_daily_report():
     send_market_regime()
