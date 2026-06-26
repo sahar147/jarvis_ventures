@@ -289,7 +289,7 @@ class TrendPullbackStrategy(IStrategy):
                 (dataframe["ema50_1h"] > dataframe["ema200_1h"])
             ),
             ["enter_long", "enter_tag"],
-        ] = (1, "pullback_ma_long")
+        ] = (1, "breakout_long")
 
 
         # SHORT searah BTC (bear)
@@ -300,7 +300,7 @@ class TrendPullbackStrategy(IStrategy):
                 (dataframe["ema50_1h"] < dataframe["ema200_1h"])
             ),
             ["enter_short", "enter_tag"],
-        ] = (1, "pullback_ma_short")
+        ] = (1, "breakout_short")
 
         return dataframe
 
