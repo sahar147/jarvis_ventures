@@ -256,21 +256,24 @@ class TrendPullbackStrategy(IStrategy):
 
         # EMA21 slope filter
         dataframe["ema21_slope"] = dataframe["ema21"] - dataframe["ema21"].shift(3)
+        dataframe["atr"] = ta.ATR(dataframe, timeperiod=14)
+        dataframe["high_20"] = dataframe["high"].rolling(20).max()
+        dataframe["volume_ma20"] = dataframe["volume"].rolling(20).mean()
 
         # Anti chop: EMA21 dan EMA50 harus cukup jauh
         dataframe["ema_gap"] = abs(dataframe["ema21"] - dataframe["ema50"])
 
         dataframe["pullback_long"] = (
-            (dataframe["low"] <= dataframe["ema21"]) &
-            (dataframe["close"] > dataframe["ema21"]) &
-            (dataframe["close"] > dataframe["open"]) &
-            (dataframe["ema_gap"] > dataframe["close"] * 0.002)
+            (dataframe["close"] > dataframe["high_20"].shift(1)) &
+            (dataframe["volume"] > dataframe["volume_ma20"]) &
+            (dataframe["atr"] > dataframe["close"] * 0.0025) &
+            (dataframe["close"] > dataframe["open"])
         )
         dataframe["pullback_short"] = (
-            (dataframe["high"] >= dataframe["ema21"]) &
-            (dataframe["close"] < dataframe["ema21"]) &
-            (dataframe["close"] < dataframe["open"]) &
-            (dataframe["ema_gap"] > dataframe["close"] * 0.002)
+            (dataframe["close"] < dataframe["low"].rolling(20).min().shift(1)) &
+            (dataframe["volume"] > dataframe["volume_ma20"]) &
+            (dataframe["atr"] > dataframe["close"] * 0.0025) &
+            (dataframe["close"] < dataframe["open"])
         )
         return dataframe
 
@@ -279,7 +282,7 @@ class TrendPullbackStrategy(IStrategy):
         dataframe.loc[
             (
                 (dataframe["pullback_long"]) &
-                (dataframe["adx"] > 23) &
+                (dataframe["adx"] > 20) &
                 (dataframe["ema50_1h"] > dataframe["ema200_1h"])
             ),
             ["enter_long", "enter_tag"],
@@ -290,7 +293,7 @@ class TrendPullbackStrategy(IStrategy):
         dataframe.loc[
             (
                 (dataframe["pullback_short"]) &
-                (dataframe["adx"] > 23) &
+                (dataframe["adx"] > 20) &
                 (dataframe["ema50_1h"] < dataframe["ema200_1h"])
             ),
             ["enter_short", "enter_tag"],
@@ -312,9 +315,12 @@ class TrendPullbackStrategy(IStrategy):
             symbol = pair.replace("/", "").replace(":USDT", "")
             resp = _req.get(f"https://fapi.binance.com/fapi/v1/leverageBracket?symbol={symbol}", timeout=5)
             brackets = resp.json()
+            if not brackets or not brackets[0].get("brackets"):
+                print(f"[LevFilter] Skip {pair} — no leverage bracket")
+                return False
             max_lev = brackets[0]["brackets"][0]["initialLeverage"]
             if max_lev < 50:
-                print(f"[LevFilter] Skip {pair} — max leverage {max_lev}x < 20x")
+                print(f"[LevFilter] Skip {pair} — max leverage {max_lev}x < 50x")
                 return False
         except Exception as e:
             print(f"[LevFilter] Error cek leverage {pair}: {e}")
