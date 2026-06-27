@@ -268,14 +268,20 @@ class TrendPullbackStrategy(IStrategy):
 
         dataframe["pullback_long"] = (
             (dataframe["close"] > dataframe["high_20"].shift(1)) &
-            (dataframe["volume"] > dataframe["volume_ma20"]) &
-            (dataframe["atr"] > dataframe["close"] * 0.0025) &
+            (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
+            (dataframe["atr"] > dataframe["close"] * 0.0035) &
+            (dataframe["atr"] < dataframe["close"] * 0.008) &
+            (dataframe["adx"] > 25) &
+            ((dataframe["close"] - dataframe["open"]) > dataframe["atr"] * 0.3) &
             (dataframe["close"] > dataframe["open"])
         )
         dataframe["pullback_short"] = (
             (dataframe["close"] < dataframe["low"].rolling(20).min().shift(1)) &
-            (dataframe["volume"] > dataframe["volume_ma20"]) &
-            (dataframe["atr"] > dataframe["close"] * 0.0025) &
+            (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
+            (dataframe["atr"] > dataframe["close"] * 0.0035) &
+            (dataframe["atr"] < dataframe["close"] * 0.008) &
+            (dataframe["adx"] > 25) &
+            ((dataframe["open"] - dataframe["close"]) > dataframe["atr"] * 0.3) &
             (dataframe["close"] < dataframe["open"])
         )
         return dataframe
@@ -285,7 +291,7 @@ class TrendPullbackStrategy(IStrategy):
         dataframe.loc[
             (
                 (dataframe["pullback_long"]) &
-                (dataframe["adx"] > 20) &
+                
                 (dataframe["ema50_1h"] > dataframe["ema200_1h"])
             ),
             ["enter_long", "enter_tag"],
@@ -296,7 +302,7 @@ class TrendPullbackStrategy(IStrategy):
         dataframe.loc[
             (
                 (dataframe["pullback_short"]) &
-                (dataframe["adx"] > 20) &
+                
                 (dataframe["ema50_1h"] < dataframe["ema200_1h"])
             ),
             ["enter_short", "enter_tag"],
