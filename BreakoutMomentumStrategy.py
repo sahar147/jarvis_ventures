@@ -104,7 +104,7 @@ def send_telegram_exit(token: str, chat_id: str, exit_info: dict):
 class TrendPullbackStrategy(IStrategy):
     INTERFACE_VERSION = 3
     can_short: bool = True
-    timeframe = "5m"
+    timeframe = "15m"
     minimal_roi = {"0": 0.30}
     stoploss = -0.15
     trailing_stop = False
