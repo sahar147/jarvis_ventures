@@ -31,7 +31,7 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
             tp_price = signal["entry_price"] * 0.98
             sl_pct = "+1%"
             tp_pct = "-2%"
-        regime_text = "🟢 BULL" if signal.get("regime_bull", True) else "🔴 BEAR"
+        regime_text = "🟢 BULL" if signal["side"] == "long" else "🔴 BEAR"
         pesan = (
             f"⚡ *ENTRY — JARVIS SNIPER*\n"
             f"📌 *{signal['pair']}* {arah}\n"
