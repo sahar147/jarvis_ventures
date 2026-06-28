@@ -249,10 +249,7 @@ class SniperStrategy(IStrategy):
                             entry_tag, side, **kwargs) -> float:
         try:
             balance = self.wallets.get_total_stake_amount()
-            if balance >= 50:
-                stake = balance * 0.333
-            else:
-                stake = balance * 0.667
+            stake = balance * 0.333
             return max(min_stake, min(stake, max_stake))
         except Exception as e:
             print(f"[StakeAmount] Error: {e}")
