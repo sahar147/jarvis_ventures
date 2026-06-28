@@ -33,12 +33,12 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
             tp_pct = "-3%"
         regime_text = "🟢 BULL" if signal.get("regime_bull", True) else "🔴 BEAR"
         pesan = (
-            f"⚡  *ENTRY — JARVIS*\n"
+            f"⚡ *ENTRY — JARVIS*\n"
             f"📌 *{signal['pair']}* {arah}\n"
             f"💰 Entry: `{signal['entry_price']:.4f} USDT`\n"
             f"🛡 SL: `{sl_price:.4f} USDT` ({sl_pct})\n"
             f"🎯 TP: `{tp_price:.4f} USDT` ({tp_pct})\n"
-            f"📊 ADX: `{signal['adx']:.1f}` | Vol: ✅  | ATR: ✅\n"
+            f"📊 ADX: `{signal['adx']:.1f}` | Vol: ✅ | ATR: ✅\n"
             f"🌍 Regime: {regime_text}\n"
             f"━━━━━━━━━━━━━━━━━━\n"
             f"🤖 *Jarvis* x *Badut Kota*\n"
@@ -151,7 +151,7 @@ class BreakoutStrategy(IStrategy):
                 pesan = (
                     f"🟢 *SESI TRADING AKTIF — JARVIS*\n"
                     f"━━━━━━━━━━━━━━━━━━\n"
-                    f"⏰  *Waktu:* `{waktu_utc}` | `{waktu_wib}`\n"
+                    f"⏰ *Waktu:* `{waktu_utc}` | `{waktu_wib}`\n"
                     f"📊 *Status:* Bot aktif mencari sinyal\n"
                     f"🕐 *Sesi aktif:* `10.00 - 04.00 WIB`\n"
                     f"━━━━━━━━━━━━━━━━━━\n"
@@ -162,7 +162,7 @@ class BreakoutStrategy(IStrategy):
                 pesan = (
                     f"🔴 *SESI SKIP ENTRY — JARVIS*\n"
                     f"━━━━━━━━━━━━━━━━━━\n"
-                    f"⏰  *Waktu:* `{waktu_utc}` | `{waktu_wib}`\n"
+                    f"⏰ *Waktu:* `{waktu_utc}` | `{waktu_wib}`\n"
                     f"📊 *Status:* Bot standby, sesi asia sepi mendingan tidur dulu sayangi modal\n"
                     f"🕐 *Sesi skip:* `04.00 - 10.00 WIB`\n"
                     f"━━━━━━━━━━━━━━━━━━\n"
@@ -183,43 +183,69 @@ class BreakoutStrategy(IStrategy):
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe["adx"] = ta.ADX(dataframe, timeperiod=14)
         dataframe["atr"] = ta.ATR(dataframe, timeperiod=14)
-        dataframe["high_20"] = dataframe["high"].rolling(20).max()
         dataframe["volume_ma20"] = dataframe["volume"].rolling(20).mean()
-        dataframe["pullback_long"] = (
-            (dataframe["close"] > dataframe["high_20"].shift(1)) &
-            (dataframe["volume"] > dataframe["volume_ma20"] * 1.8) &
+
+        # Breakout level 12 candle
+        dataframe["high_12"] = dataframe["high"].rolling(12).max()
+        dataframe["low_12"] = dataframe["low"].rolling(12).min()
+
+        # LONG: breakout candle sebelumnya, retest sekarang
+        prev_breakout_long = dataframe["close"].shift(1) > dataframe["high_12"].shift(1)
+        retest_zone_long = dataframe["low"] <= dataframe["high_12"].shift(1) * 1.005
+        not_too_deep_long = dataframe["low"] >= dataframe["high_12"].shift(1) * 0.995
+        rejection_long = dataframe["close"] > dataframe["open"]
+        strong_close_long = dataframe["close"] > dataframe["high_12"].shift(1)
+
+        dataframe["entry_long"] = (
+            prev_breakout_long &
+            retest_zone_long &
+            not_too_deep_long &
+            rejection_long &
+            strong_close_long &
+            (dataframe["volume"] > dataframe["volume_ma20"] * 1.4) &
             (dataframe["atr"] > dataframe["close"] * 0.0035) &
             (dataframe["atr"] < dataframe["close"] * 0.008) &
-            (dataframe["adx"] > 25) &
-            ((dataframe["close"] - dataframe["open"]) > dataframe["atr"] * 0.3) &
-            (dataframe["close"] > dataframe["open"])
+            (dataframe["adx"] > 20) &
+            ((dataframe["close"] - dataframe["open"]) > dataframe["atr"] * 0.25)
         )
-        dataframe["pullback_short"] = (
-            (dataframe["close"] < dataframe["low"].rolling(20).min().shift(1)) &
-            (dataframe["volume"] > dataframe["volume_ma20"] * 1.8) &
+
+        # SHORT: breakout candle sebelumnya, retest sekarang
+        prev_breakout_short = dataframe["close"].shift(1) < dataframe["low_12"].shift(1)
+        retest_zone_short = dataframe["high"] >= dataframe["low_12"].shift(1) * 0.995
+        not_too_deep_short = dataframe["high"] <= dataframe["low_12"].shift(1) * 1.005
+        rejection_short = dataframe["close"] < dataframe["open"]
+        strong_close_short = dataframe["close"] < dataframe["low_12"].shift(1)
+
+        dataframe["entry_short"] = (
+            prev_breakout_short &
+            retest_zone_short &
+            not_too_deep_short &
+            rejection_short &
+            strong_close_short &
+            (dataframe["volume"] > dataframe["volume_ma20"] * 1.4) &
             (dataframe["atr"] > dataframe["close"] * 0.0035) &
             (dataframe["atr"] < dataframe["close"] * 0.008) &
-            (dataframe["adx"] > 25) &
-            ((dataframe["open"] - dataframe["close"]) > dataframe["atr"] * 0.3) &
-            (dataframe["close"] < dataframe["open"])
+            (dataframe["adx"] > 20) &
+            ((dataframe["open"] - dataframe["close"]) > dataframe["atr"] * 0.25)
         )
+
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
             (
-                (dataframe["pullback_long"]) &
+                (dataframe["entry_long"]) &
                 (dataframe["ema50_1h"] > dataframe["ema200_1h"])
             ),
             ["enter_long", "enter_tag"],
-        ] = (1, "breakout_long")
+        ] = (1, "breakout_retest_long")
         dataframe.loc[
             (
-                (dataframe["pullback_short"]) &
+                (dataframe["entry_short"]) &
                 (dataframe["ema50_1h"] < dataframe["ema200_1h"])
             ),
             ["enter_short", "enter_tag"],
-        ] = (1, "breakout_short")
+        ] = (1, "breakout_retest_short")
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
