@@ -23,14 +23,14 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
     try:
         if signal["side"] == "long":
             arah = "LONG"
-            sl_price = signal["entry_price"] * 0.98
-            tp_price = signal["entry_price"] * 1.04
+            sl_price = signal["entry_price"] * 0.985
+            tp_price = signal["entry_price"] * 1.03
             sl_pct = "-1.5%"
             tp_pct = "+3%"
         else:
             arah = "SHORT"
-            sl_price = signal["entry_price"] * 1.02
-            tp_price = signal["entry_price"] * 0.96
+            sl_price = signal["entry_price"] * 1.015
+            tp_price = signal["entry_price"] * 0.97
             sl_pct = "+1.5%"
             tp_pct = "-3%"
 
