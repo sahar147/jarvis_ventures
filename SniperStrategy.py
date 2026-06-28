@@ -95,14 +95,14 @@ class SniperStrategy(IStrategy):
     INTERFACE_VERSION = 3
     can_short: bool = True
     timeframe = "5m"
-    minimal_roi = {"0": 0.20}
-    stoploss = -0.10
+    minimal_roi = {"0": 0.30}
+    stoploss = -0.15
     trailing_stop = False
     trailing_stop_positive = 0.0
     trailing_stop_positive_offset = 0.0
     trailing_only_offset_is_reached = False
     process_only_new_candles = True
-    use_exit_signal = True
+    use_exit_signal = False
     startup_candle_count: int = 200
     trade_time_start = 3
     trade_time_end = 21
