@@ -23,16 +23,16 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
     try:
         if signal["side"] == "long":
             arah = "LONG"
-            sl_price = signal["entry_price"] * 0.99
-            tp_price = signal["entry_price"] * 1.02
-            sl_pct = "-1%"
-            tp_pct = "+2%"
+            sl_price = signal["entry_price"] * 0.98
+            tp_price = signal["entry_price"] * 1.04
+            sl_pct = "-1.5%"
+            tp_pct = "+3%"
         else:
             arah = "SHORT"
             sl_price = signal["entry_price"] * 1.02
-            tp_price = signal["entry_price"] * 0.98
-            sl_pct = "+1%"
-            tp_pct = "-2%"
+            tp_price = signal["entry_price"] * 0.96
+            sl_pct = "+1.5%"
+            tp_pct = "-3%"
 
         slope_emoji = "▲" if signal["side"] == "long" else "▼"
         regime_text = "🟢 BULL" if signal.get("regime_bull", True) else "🔴 BEAR"
@@ -104,9 +104,9 @@ def send_telegram_exit(token: str, chat_id: str, exit_info: dict):
 class TrendPullbackStrategy(IStrategy):
     INTERFACE_VERSION = 3
     can_short: bool = True
-    timeframe = "5m"
-    minimal_roi = {"0": 0.20}
-    stoploss = -0.10
+    timeframe = "15m"
+    minimal_roi = {"0": 0.30}
+    stoploss = -0.15
     trailing_stop = False
     trailing_stop_positive = 0.0
     trailing_stop_positive_offset = 0.0
@@ -148,10 +148,10 @@ class TrendPullbackStrategy(IStrategy):
     def leverage(self, pair: str, current_time, current_rate: float,
                  proposed_leverage: float, max_leverage: float,
                  entry_tag, side: str, **kwargs) -> float:
-        if max_leverage < 15:
-            print(f"[LevFilter] Skip {pair} — max leverage {max_leverage}x < 15x")
+        if max_leverage < 10:
+            print(f"[LevFilter] Skip {pair} — max leverage {max_leverage}x < 10x")
             return 1.0
-        return 15.0
+        return 10.0
 
     def is_trading_time(self) -> bool:
         hour = datetime.now(timezone.utc).hour
@@ -268,20 +268,20 @@ class TrendPullbackStrategy(IStrategy):
 
         dataframe["pullback_long"] = (
             (dataframe["close"] > dataframe["high_20"].shift(1)) &
-            (dataframe["volume"] > dataframe["volume_ma20"] * 1.8) &
+            (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
             (dataframe["atr"] > dataframe["close"] * 0.0035) &
             (dataframe["atr"] < dataframe["close"] * 0.008) &
             (dataframe["adx"] > 25) &
-            ((dataframe["close"] - dataframe["open"]) > dataframe["atr"] * 0.4) &
+            ((dataframe["close"] - dataframe["open"]) > dataframe["atr"] * 0.3) &
             (dataframe["close"] > dataframe["open"])
         )
         dataframe["pullback_short"] = (
             (dataframe["close"] < dataframe["low"].rolling(20).min().shift(1)) &
-            (dataframe["volume"] > dataframe["volume_ma20"] * 1.8) &
+            (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
             (dataframe["atr"] > dataframe["close"] * 0.0035) &
             (dataframe["atr"] < dataframe["close"] * 0.008) &
             (dataframe["adx"] > 25) &
-            ((dataframe["open"] - dataframe["close"]) > dataframe["atr"] * 0.4) &
+            ((dataframe["open"] - dataframe["close"]) > dataframe["atr"] * 0.3) &
             (dataframe["close"] < dataframe["open"])
         )
         return dataframe
