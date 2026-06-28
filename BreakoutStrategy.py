@@ -94,7 +94,7 @@ def send_telegram_exit(token: str, chat_id: str, exit_info: dict):
 class BreakoutStrategy(IStrategy):
     INTERFACE_VERSION = 3
     can_short: bool = True
-    timeframe = "15m"
+    timeframe = "5m"
     minimal_roi = {"0": 0.30}
     stoploss = -0.15
     trailing_stop = False
@@ -187,7 +187,7 @@ class BreakoutStrategy(IStrategy):
         dataframe["volume_ma20"] = dataframe["volume"].rolling(20).mean()
         dataframe["pullback_long"] = (
             (dataframe["close"] > dataframe["high_20"].shift(1)) &
-            (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
+            (dataframe["volume"] > dataframe["volume_ma20"] * 1.8) &
             (dataframe["atr"] > dataframe["close"] * 0.0035) &
             (dataframe["atr"] < dataframe["close"] * 0.008) &
             (dataframe["adx"] > 25) &
@@ -196,7 +196,7 @@ class BreakoutStrategy(IStrategy):
         )
         dataframe["pullback_short"] = (
             (dataframe["close"] < dataframe["low"].rolling(20).min().shift(1)) &
-            (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
+            (dataframe["volume"] > dataframe["volume_ma20"] * 1.8) &
             (dataframe["atr"] > dataframe["close"] * 0.0035) &
             (dataframe["atr"] < dataframe["close"] * 0.008) &
             (dataframe["adx"] > 25) &
