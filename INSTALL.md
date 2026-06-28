@@ -1,36 +1,91 @@
-# Panduan Pemasangan Jarvis Ventures
+# JARVIS VENTURES — PANDUAN INSTALASI
 
-> Sebelum menggunakan, **WAJIB** ikuti channel Telegram kami!
-> 👉 [t.me/badut_kota](https://t.me/badut_kota)
+Repo: github.com/sahar147/jarvis_ventures
+Channel: t.me/badut_kota (@badutkota147)
 
-## LANGKAH 1 - SERVER
-VPS Ubuntu minimal 2GB RAM
+---
+
+## REQUIREMENTS
+- VPS Ubuntu 20.04/22.04
+- Docker + Docker Compose
+- Akun Binance dengan Futures aktif
+- Bot Telegram (dari @BotFather)
+- Channel Telegram
+
+---
+
+## LANGKAH 1 — INSTALL DOCKER
 curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER
 sudo apt install docker-compose-plugin -y
 
-## LANGKAH 2 - CLONE
-git clone https://github.com/sahar147/jarvis_ventures.git ~/freqtrade
+## LANGKAH 2 — CLONE REPO
+git clone https://github.com/sahar147/jarvis_ventures.git
+cd jarvis_ventures
+mkdir -p user_data/strategies
 
-## LANGKAH 3 - CONFIG
-Edit config.json: isi API key Binance, token Telegram bot pribadi dan channel signal
+## LANGKAH 3 — SETUP FILE
+cp SniperStrategy.py user_data/strategies/
+cp jarvis_settings.json user_data/
 
-## LANGKAH 4 - JALANKAN
-cd ~/freqtrade && docker compose up -d
+## LANGKAH 4 — EDIT CONFIG
+nano config.json
+Ganti:
+- YOUR_BINANCE_API_KEY
+- YOUR_BINANCE_API_SECRET
+- YOUR_BOT_TOKEN (telegram pribadi)
+- YOUR_CHAT_ID (telegram pribadi)
+- YOUR_SIGNAL_BOT_TOKEN (bot signal)
+- YOUR_SIGNAL_CHAT_ID (channel signal)
 
-## STRATEGI: Breakout Momentum
-- EMA50 > EMA200 H1
-- Close > High/Low 20 candle
-- Volume > MA20, ATR > 0.0025, ADX > 20
-- SL: -1.5% harga | TP: +3% harga | RR 1:2
-- Leverage 10x Cross
-- Saldo < $50 = Risk 10% | Saldo >= $50 = Risk 5%
+## LANGKAH 5 — EDIT STRATEGI
+nano user_data/strategies/SniperStrategy.py
+Ganti:
+- YOUR_BOT_TOKEN
+- YOUR_CHAT_ID
 
-## SETTINGS TANPA RESTART
-Edit jarvis_settings.json:
-- time_filter: true/false
-- owner_name: nama kamu
+## LANGKAH 6 — EDIT JARVIS SETTINGS
+nano user_data/jarvis_settings.json
+Ganti "Nama Kamu" dengan nama kamu
+time_filter: true = aktif 03-21 UTC
+time_filter: false = 24 jam non-stop
 
-## Disclaimer
-Trading futures berisiko tinggi. Gunakan dengan bijak.
+## LANGKAH 7 — JALANKAN BOT
+docker compose up -d
 
-Jarvis - AI Trading Bot | Badut Kota @badutkota147 | Owner: Pakdendam
+## LANGKAH 8 — CEK BOT
+docker compose logs freqtrade --tail 20
+Kalau ada "RUNNING" berarti bot aktif!
+
+---
+
+## STRATEGI: SniperStrategy
+- Timeframe: 5m + trend 1H
+- Entry: BB breakout + RSI + EMA21 + ATR + Volume
+- Leverage: 15x Cross Margin
+- SL: -1% harga = -15% margin
+- TP: +2% harga = +30% margin
+- RR: 1:2
+- Stake: 33.3% saldo → loss ~5% per SL
+- Max trade: 1
+- Stoploss on exchange: aktif
+
+---
+
+## OPERASIONAL
+docker compose logs freqtrade --tail 20   # cek log
+docker compose restart freqtrade           # restart
+docker compose down                        # stop
+
+---
+
+## PENTING
+- Gunakan modal yang sanggup kamu tanggung ruginya
+- Jangan gunakan uang pinjaman
+- Bot tidak menjamin profit
+- Selalu monitor performa bot
+
+---
+
+## IKUTI CHANNEL SIGNAL
+t.me/badut_kota (@badutkota147)
