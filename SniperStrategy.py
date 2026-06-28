@@ -32,6 +32,10 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
             sl_pct = "+1%"
             tp_pct = "-2%"
         regime_text = "🟢 BULL" if signal["side"] == "long" else "🔴 BEAR"
+        balance = signal.get("balance", 0)
+        stake = balance * 0.333
+        saldo_sl = balance - (stake * 0.15)
+        saldo_tp = balance + (stake * 0.30)
         pesan = (
             f"⚡ *ENTRY — JARVIS SNIPER*\n"
             f"📌 *{signal['pair']}* {arah}\n"
@@ -40,6 +44,7 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
             f"🎯 TP: `{tp_price:.4f} USDT` ({tp_pct})\n"
             f"📊 RSI: `{signal['rsi']:.1f}` | Vol: ✅ | ATR: ✅\n"
             f"🌍 Regime: {regime_text}\n"
+            f"💼 Saldo: `{balance:.2f}` | SL→`{saldo_sl:.2f}` | TP→`{saldo_tp:.2f}` USDT\n"
             f"━━━━━━━━━━━━━━━━━━\n"
             f"🤖 *Jarvis* x *Badut Kota*\n"
             f"👤 Owner: _Pakdendam_"
@@ -52,6 +57,30 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
             print(f"[Telegram] Entry terkirim: {signal['pair']} {arah}")
     except Exception as e:
         print(f"[Telegram] Error: {e}")
+
+def send_telegram_cancel(token: str, chat_id: str, cancel_info: dict):
+    try:
+        pair = cancel_info["pair"]
+        side = cancel_info["side"]
+        arah = "LONG" if side == "long" else "SHORT"
+        balance = cancel_info.get("balance", 0)
+        pesan = (
+            f"⚠️ *ORDER CANCELLED — JARVIS*\n"
+            f"📌 *{pair}* {arah}\n"
+            f"❌ Order dibatalkan (timeout)\n"
+            f"💼 Saldo: `{balance:.2f} USDT`\n"
+            f"━━━━━━━━━━━━━━━━━━\n"
+            f"🤖 *Jarvis* x *Badut Kota*\n"
+            f"👤 Owner: _Pakdendam_"
+        )
+        url = f"https://api.telegram.org/bot{token}/sendMessage"
+        resp = requests.post(url, json={"chat_id": chat_id, "text": pesan, "parse_mode": "Markdown"}, timeout=10)
+        if resp.status_code != 200:
+            print(f"[Telegram Cancel] Gagal: {resp.text}")
+        else:
+            print(f"[Telegram Cancel] Notif terkirim: {pair}")
+    except Exception as e:
+        print(f"[Telegram Cancel] Error: {e}")
 
 def send_telegram_exit(token: str, chat_id: str, exit_info: dict):
     try:
@@ -102,7 +131,7 @@ class SniperStrategy(IStrategy):
     trailing_stop_positive_offset = 0.0
     trailing_only_offset_is_reached = False
     process_only_new_candles = True
-    use_exit_signal = False
+    use_exit_signal = True
     startup_candle_count: int = 200
     trade_time_start = 3
     trade_time_end = 21
@@ -275,12 +304,31 @@ class SniperStrategy(IStrategy):
                 "side": side,
                 "entry_price": rate,
                 "rsi": float(last.get("rsi", 0)),
+                "balance": float(self.wallets.get_total_stake_amount()),
             }
             if self.tg_token and self.tg_chat_id:
                 send_telegram_signal(self.tg_token, self.tg_chat_id, signal)
                 print(f"[Telegram Entry] Notif terkirim: {pair}")
         except Exception as e:
             print(f"[Telegram Entry] Error: {e}")
+        return True
+
+
+    def handle_trade_exit(self, pair: str, trade, order: dict, **kwargs) -> None:
+        pass
+
+    def check_entry_timeout(self, pair: str, trade, order: dict,
+                            current_time, **kwargs) -> bool:
+        try:
+            if self.tg_token and self.tg_chat_id:
+                cancel_info = {
+                    "pair": pair,
+                    "side": "short" if trade.is_short else "long",
+                    "balance": float(self.wallets.get_total_stake_amount()),
+                }
+                send_telegram_cancel(self.tg_token, self.tg_chat_id, cancel_info)
+        except Exception as e:
+            print(f"[Cancel] Error: {e}")
         return True
 
     def custom_exit(self, pair: str, trade, current_time, current_rate: float,
