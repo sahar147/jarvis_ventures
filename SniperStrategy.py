@@ -123,7 +123,7 @@ def send_telegram_exit(token: str, chat_id: str, exit_info: dict):
 class SniperStrategy(IStrategy):
     INTERFACE_VERSION = 3
     can_short: bool = True
-    timeframe = "15m"
+    timeframe = "5m"
     minimal_roi = {"0": 0.30}
     stoploss = -0.15
     trailing_stop = False
