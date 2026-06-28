@@ -102,7 +102,7 @@
         "listen_ip_address": "0.0.0.0",
         "listen_port": 8080,
         "verbosity": "error",
-        "jwt_secret_key": "YOUR_JWT_SECRET",
+        "jwt_secret_key": "jarvisventures2026supersecretkey_pakdendam_trading_bot_binance_futures_aman",
         "CORS_origins": [
             "*"
         ],
@@ -125,5 +125,5 @@
         "stoploss": "market",
         "stoploss_on_exchange": false
     },
-    "strategy": "TrendPullbackStrategy"
+    "strategy": "SniperStrategy"
 }
