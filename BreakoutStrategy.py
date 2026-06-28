@@ -184,49 +184,29 @@ class BreakoutStrategy(IStrategy):
         dataframe["adx"] = ta.ADX(dataframe, timeperiod=14)
         dataframe["atr"] = ta.ATR(dataframe, timeperiod=14)
         dataframe["volume_ma20"] = dataframe["volume"].rolling(20).mean()
+        dataframe["high_20"] = dataframe["high"].rolling(20).max()
+        dataframe["low_20"] = dataframe["low"].rolling(20).min()
 
-        # Breakout level 12 candle
-        dataframe["high_12"] = dataframe["high"].rolling(12).max()
-        dataframe["low_12"] = dataframe["low"].rolling(12).min()
-
-        # LONG: breakout candle sebelumnya, retest sekarang
-        prev_breakout_long = dataframe["close"].shift(1) > dataframe["high_12"].shift(1)
-        retest_zone_long = dataframe["low"] <= dataframe["high_12"].shift(1) * 1.005
-        not_too_deep_long = dataframe["low"] >= dataframe["high_12"].shift(1) * 0.995
-        rejection_long = dataframe["close"] > dataframe["open"]
-        strong_close_long = dataframe["close"] > dataframe["high_12"].shift(1)
-
+        # LONG: sniper breakout
         dataframe["entry_long"] = (
-            prev_breakout_long &
-            retest_zone_long &
-            not_too_deep_long &
-            rejection_long &
-            strong_close_long &
-            (dataframe["volume"] > dataframe["volume_ma20"] * 1.4) &
-            (dataframe["atr"] > dataframe["close"] * 0.0035) &
-            (dataframe["atr"] < dataframe["close"] * 0.008) &
-            (dataframe["adx"] > 20) &
-            ((dataframe["close"] - dataframe["open"]) > dataframe["atr"] * 0.25)
+            (dataframe["close"] > dataframe["high_20"].shift(1) * 1.0015) &
+            (dataframe["volume"] > dataframe["volume_ma20"] * 2.0) &
+            (dataframe["volume"] > dataframe["volume"].shift(1)) &
+            (dataframe["adx"] > 25) &
+            (dataframe["atr"] > dataframe["close"] * 0.0025) &
+            (dataframe["close"] > dataframe["close"].shift(1)) &
+            ((dataframe["close"] - dataframe["open"]) > dataframe["close"] * 0.0015)
         )
 
-        # SHORT: breakout candle sebelumnya, retest sekarang
-        prev_breakout_short = dataframe["close"].shift(1) < dataframe["low_12"].shift(1)
-        retest_zone_short = dataframe["high"] >= dataframe["low_12"].shift(1) * 0.995
-        not_too_deep_short = dataframe["high"] <= dataframe["low_12"].shift(1) * 1.005
-        rejection_short = dataframe["close"] < dataframe["open"]
-        strong_close_short = dataframe["close"] < dataframe["low_12"].shift(1)
-
+        # SHORT: sniper breakout
         dataframe["entry_short"] = (
-            prev_breakout_short &
-            retest_zone_short &
-            not_too_deep_short &
-            rejection_short &
-            strong_close_short &
-            (dataframe["volume"] > dataframe["volume_ma20"] * 1.4) &
-            (dataframe["atr"] > dataframe["close"] * 0.0035) &
-            (dataframe["atr"] < dataframe["close"] * 0.008) &
-            (dataframe["adx"] > 20) &
-            ((dataframe["open"] - dataframe["close"]) > dataframe["atr"] * 0.25)
+            (dataframe["close"] < dataframe["low_20"].shift(1) * 0.9985) &
+            (dataframe["volume"] > dataframe["volume_ma20"] * 2.0) &
+            (dataframe["volume"] > dataframe["volume"].shift(1)) &
+            (dataframe["adx"] > 25) &
+            (dataframe["atr"] > dataframe["close"] * 0.0025) &
+            (dataframe["close"] < dataframe["close"].shift(1)) &
+            ((dataframe["open"] - dataframe["close"]) > dataframe["close"] * 0.0015)
         )
 
         return dataframe
@@ -238,14 +218,14 @@ class BreakoutStrategy(IStrategy):
                 (dataframe["ema50_1h"] > dataframe["ema200_1h"])
             ),
             ["enter_long", "enter_tag"],
-        ] = (1, "breakout_retest_long")
+        ] = (1, "sniper_long")
         dataframe.loc[
             (
                 (dataframe["entry_short"]) &
                 (dataframe["ema50_1h"] < dataframe["ema200_1h"])
             ),
             ["enter_short", "enter_tag"],
-        ] = (1, "breakout_retest_short")
+        ] = (1, "sniper_short")
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
