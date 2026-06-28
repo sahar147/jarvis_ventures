@@ -91,7 +91,7 @@ def send_telegram_exit(token: str, chat_id: str, exit_info: dict):
     except Exception as e:
         print(f"[Telegram Exit] Error: {e}")
 
-class TrendPullbackStrategy(IStrategy):
+class BreakoutStrategy(IStrategy):
     INTERFACE_VERSION = 3
     can_short: bool = True
     timeframe = "15m"
