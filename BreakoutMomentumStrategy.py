@@ -8,7 +8,6 @@ import numpy as np
 import requests
 from datetime import datetime, timezone
 
-
 def send_telegram(token: str, chat_id: str, pesan: str):
     try:
         url = f"https://api.telegram.org/bot{token}/sendMessage"
@@ -17,7 +16,6 @@ def send_telegram(token: str, chat_id: str, pesan: str):
             print(f"[Telegram] Gagal: {resp.text}")
     except Exception as e:
         print(f"[Telegram] Error: {e}")
-
 
 def send_telegram_signal(token: str, chat_id: str, signal: dict):
     try:
@@ -33,17 +31,14 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
             tp_price = signal["entry_price"] * 0.97
             sl_pct = "+1.5%"
             tp_pct = "-3%"
-
-        slope_emoji = "▲" if signal["side"] == "long" else "▼"
         regime_text = "🟢 BULL" if signal.get("regime_bull", True) else "🔴 BEAR"
-
         pesan = (
-            f"⚡ *ENTRY — JARVIS*\n"
+            f"⚡  *ENTRY — JARVIS*\n"
             f"📌 *{signal['pair']}* {arah}\n"
             f"💰 Entry: `{signal['entry_price']:.4f} USDT`\n"
             f"🛡 SL: `{sl_price:.4f} USDT` ({sl_pct})\n"
             f"🎯 TP: `{tp_price:.4f} USDT` ({tp_pct})\n"
-            f"📊 ADX: `{signal['adx']:.1f}` | Vol: ✅ | ATR: ✅\n"
+            f"📊 ADX: `{signal['adx']:.1f}` | Vol: ✅  | ATR: ✅\n"
             f"🌍 Regime: {regime_text}\n"
             f"━━━━━━━━━━━━━━━━━━\n"
             f"🤖 *Jarvis* x *Badut Kota*\n"
@@ -58,7 +53,6 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
     except Exception as e:
         print(f"[Telegram] Error: {e}")
 
-
 def send_telegram_exit(token: str, chat_id: str, exit_info: dict):
     try:
         reason = exit_info["reason"]
@@ -70,16 +64,12 @@ def send_telegram_exit(token: str, chat_id: str, exit_info: dict):
         arah = "LONG" if side == "long" else "SHORT"
         profit_sign = "+" if profit_pct >= 0 else ""
         profit_display = profit_pct / 10
-
         if reason == "roi":
             judul = "🎯 *TP HIT*"
             hasil_emoji = "✅"
         elif reason in ("stop_loss", "trailing_stop_loss"):
             judul = "🛑 *SL HIT*"
             hasil_emoji = "❌"
-        elif "smart_exit" in reason:
-            judul = "⏱ *SMART EXIT 2 JAM*"
-            hasil_emoji = "✅" if profit_pct >= 0 else "❌"
         else:
             judul = "🔚 *CLOSED*"
             hasil_emoji = "🔄"
@@ -114,18 +104,9 @@ class TrendPullbackStrategy(IStrategy):
     process_only_new_candles = True
     use_exit_signal = True
     startup_candle_count: int = 200
-    ma_fast = 21
-    ma_slow = 50
-    ma_trend = 200
-    score_threshold = 4
-
-    # Jam trading aktif UTC (03.00 - 21.00 UTC = 10.00 - 04.00 WIB)
-    trade_time_start = 3   # 03.00 UTC
-    trade_time_end = 21    # 21.00 UTC
-
-    # Simpan status jam untuk notif sekali saja
+    trade_time_start = 3
+    trade_time_end = 21
     _last_session_notice = None
-
     protections = [
         {"method": "CooldownPeriod", "stop_duration_candles": 5},
         {"method": "StoplossGuard", "lookback_period_candles": 24, "trade_limit": 2, "stop_duration_candles": 4, "only_per_pair": True}
@@ -136,7 +117,6 @@ class TrendPullbackStrategy(IStrategy):
         tg = config.get("telegram_signal", {})
         self.tg_token = tg.get("token", "")
         self.tg_chat_id = tg.get("chat_id", "")
-        # Load jarvis settings
         try:
             import json as _json
             with open("/freqtrade/user_data/jarvis_settings.json") as f:
@@ -158,28 +138,20 @@ class TrendPullbackStrategy(IStrategy):
         return self.trade_time_start <= hour < self.trade_time_end
 
     def check_session_notice(self):
-        """Kirim notif ke channel saat ganti sesi — sekali saja per sesi."""
         try:
             hour = datetime.now(timezone.utc).hour
             wib_hour = (hour + 7) % 24
-
-            if self.trade_time_start <= hour < self.trade_time_end:
-                session = "active"
-            else:
-                session = "skip"
-
+            session = "active" if self.trade_time_start <= hour < self.trade_time_end else "skip"
             if self._last_session_notice == session:
                 return
-
             self._last_session_notice = session
             waktu_utc = datetime.now(timezone.utc).strftime("%H:%M UTC")
             waktu_wib = f"{wib_hour:02d}:{datetime.now(timezone.utc).strftime('%M')} WIB"
-
             if session == "active":
                 pesan = (
                     f"🟢 *SESI TRADING AKTIF — JARVIS*\n"
                     f"━━━━━━━━━━━━━━━━━━\n"
-                    f"⏰ *Waktu:* `{waktu_utc}` | `{waktu_wib}`\n"
+                    f"⏰  *Waktu:* `{waktu_utc}` | `{waktu_wib}`\n"
                     f"📊 *Status:* Bot aktif mencari sinyal\n"
                     f"🕐 *Sesi aktif:* `10.00 - 04.00 WIB`\n"
                     f"━━━━━━━━━━━━━━━━━━\n"
@@ -190,82 +162,29 @@ class TrendPullbackStrategy(IStrategy):
                 pesan = (
                     f"🔴 *SESI SKIP ENTRY — JARVIS*\n"
                     f"━━━━━━━━━━━━━━━━━━\n"
-                    f"⏰ *Waktu:* `{waktu_utc}` | `{waktu_wib}`\n"
+                    f"⏰  *Waktu:* `{waktu_utc}` | `{waktu_wib}`\n"
                     f"📊 *Status:* Bot standby, sesi asia sepi mendingan tidur dulu sayangi modal\n"
                     f"🕐 *Sesi skip:* `04.00 - 10.00 WIB`\n"
                     f"━━━━━━━━━━━━━━━━━━\n"
                     f"🤖 *Jarvis* — _AI Trading Bot_\n"
                     f"🎪 *Badut Kota* — _@badutkota147_"
                 )
-
             if self.tg_token and self.tg_chat_id:
                 send_telegram(self.tg_token, self.tg_chat_id, pesan)
         except Exception as e:
             print(f"[Session Notice] Error: {e}")
 
-    @informative("1d")
-    def populate_indicators_1d(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe["ema200"] = ta.EMA(dataframe, timeperiod=200)
-        return dataframe
-
     @informative("1h")
     def populate_indicators_1h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
-        dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
-        dataframe["ema200"] = ta.EMA(dataframe, timeperiod=200)
-        return dataframe
-
-    @informative("4h")
-    def populate_indicators_4h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
         dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
         dataframe["ema200"] = ta.EMA(dataframe, timeperiod=200)
         return dataframe
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe["ema21"] = ta.EMA(dataframe, timeperiod=self.ma_fast)
-        dataframe["ema50"] = ta.EMA(dataframe, timeperiod=self.ma_slow)
-        dataframe["ema200"] = ta.EMA(dataframe, timeperiod=self.ma_trend)
-        dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
         dataframe["adx"] = ta.ADX(dataframe, timeperiod=14)
-        dataframe["atr"] = ta.ATR(dataframe, timeperiod=14)
-        bull = pd.Series(0, index=dataframe.index)
-        bull += (dataframe["close"] > dataframe["ema200"]).astype(int)
-        bull += (dataframe["ema21"] > dataframe["ema50"]).astype(int)
-        bull += (dataframe["close"] > dataframe["ema200_1h"]).astype(int)
-        bull += (dataframe["ema21_1h"] > dataframe["ema50_1h"]).astype(int)
-        bull += (dataframe["close"] > dataframe["ema200_4h"]).astype(int)
-        bull += (dataframe["ema21_4h"] > dataframe["ema50_4h"]).astype(int)
-        dataframe["bull_score"] = bull
-        bear = pd.Series(0, index=dataframe.index)
-        bear += (dataframe["close"] < dataframe["ema200"]).astype(int)
-        bear += (dataframe["ema21"] < dataframe["ema50"]).astype(int)
-        bear += (dataframe["close"] < dataframe["ema200_1h"]).astype(int)
-        bear += (dataframe["ema21_1h"] < dataframe["ema50_1h"]).astype(int)
-        bear += (dataframe["close"] < dataframe["ema200_4h"]).astype(int)
-        bear += (dataframe["ema21_4h"] < dataframe["ema50_4h"]).astype(int)
-        dataframe["bear_score"] = bear
-        # Market Regime Detection pakai EMA200 1D
-        if "ema200_1d" in dataframe.columns:
-            dataframe["market_bull"] = dataframe["close"] > dataframe["ema200_1d"]
-            dataframe["market_bear"] = dataframe["close"] < dataframe["ema200_1d"]
-        else:
-            dataframe["market_bull"] = True
-            dataframe["market_bear"] = True
-
-        # EMA21 slope filter (EMA21 harus miring)
-
-
-
-        # EMA21 slope filter
-        dataframe["ema21_slope"] = dataframe["ema21"] - dataframe["ema21"].shift(3)
         dataframe["atr"] = ta.ATR(dataframe, timeperiod=14)
         dataframe["high_20"] = dataframe["high"].rolling(20).max()
         dataframe["volume_ma20"] = dataframe["volume"].rolling(20).mean()
-
-        # Anti chop: EMA21 dan EMA50 harus cukup jauh
-        dataframe["ema_gap"] = abs(dataframe["ema21"] - dataframe["ema50"])
-
         dataframe["pullback_long"] = (
             (dataframe["close"] > dataframe["high_20"].shift(1)) &
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
@@ -287,27 +206,20 @@ class TrendPullbackStrategy(IStrategy):
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        # LONG searah BTC (bull)
         dataframe.loc[
             (
                 (dataframe["pullback_long"]) &
-                
                 (dataframe["ema50_1h"] > dataframe["ema200_1h"])
             ),
             ["enter_long", "enter_tag"],
         ] = (1, "breakout_long")
-
-
-        # SHORT searah BTC (bear)
         dataframe.loc[
             (
                 (dataframe["pullback_short"]) &
-                
                 (dataframe["ema50_1h"] < dataframe["ema200_1h"])
             ),
             ["enter_short", "enter_tag"],
         ] = (1, "breakout_short")
-
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
@@ -321,10 +233,8 @@ class TrendPullbackStrategy(IStrategy):
         try:
             balance = self.wallets.get_total_stake_amount()
             if balance >= 50:
-                # Risk 5% saldo
                 stake = balance * 0.333
             else:
-                # Risk 10% saldo
                 stake = balance * 0.667
             return max(min_stake, min(stake, max_stake))
         except Exception as e:
@@ -339,7 +249,7 @@ class TrendPullbackStrategy(IStrategy):
             with open("/freqtrade/user_data/jarvis_settings.json") as f:
                 settings = _json.load(f)
         except:
-            settings = {"time_filter": False, "smart_exit": False, "owner_name": "Pakdendam"}
+            settings = {"time_filter": False, "owner_name": "Pakdendam"}
         if settings.get("time_filter", False) and not self.is_trading_time():
             print(f"[TimeFilter] Skip entry {pair}")
             return False
@@ -366,12 +276,6 @@ class TrendPullbackStrategy(IStrategy):
     def confirm_trade_exit(self, pair: str, trade, order_type: str, amount: float,
                            rate: float, time_in_force: str, exit_reason: str,
                            **kwargs) -> bool:
-        try:
-            import json as _json
-            with open("/freqtrade/user_data/jarvis_settings.json") as f:
-                settings = _json.load(f)
-        except:
-            settings = {"time_filter": False, "smart_exit": False, "owner_name": "Pakdendam"}
         try:
             if self.tg_token and self.tg_chat_id:
                 side = "short" if trade.is_short else "long"
