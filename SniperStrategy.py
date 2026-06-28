@@ -124,8 +124,8 @@ class SniperStrategy(IStrategy):
     INTERFACE_VERSION = 3
     can_short: bool = True
     timeframe = "5m"
-    minimal_roi = {"0": 0.30}
-    stoploss = -0.15
+    minimal_roi = {"0": 2.0}
+    stoploss = -1.0
     trailing_stop = False
     trailing_stop_positive = 0.0
     trailing_stop_positive_offset = 0.0
