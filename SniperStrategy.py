@@ -33,7 +33,7 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
             tp_pct = "-2%"
         regime_text = "🟢 BULL" if signal["side"] == "long" else "🔴 BEAR"
         balance = signal.get("balance", 0)
-        stake = balance * 0.05
+        stake = balance * 0.10
         saldo_sl = balance - (stake * 0.15)
         saldo_tp = balance + (stake * 0.30)
         pesan = (
@@ -288,7 +288,7 @@ class SniperStrategy(IStrategy):
                             entry_tag, side, **kwargs) -> float:
         try:
             balance = self.wallets.get_total_stake_amount()
-            stake = balance * 0.05
+            stake = balance * 0.10
             return max(min_stake, min(stake, max_stake))
         except Exception as e:
             print(f"[StakeAmount] Error: {e}")
