@@ -229,20 +229,30 @@ class SniperStrategy(IStrategy):
         dataframe["bb_lower"] = lower
         dataframe["bb_middle"] = middle
 
-        # LONG entry
+        # LONG entry — retest MA20 setelah breakout BB Upper
+        prev_breakout_long = dataframe["close"].shift(1) > dataframe["bb_upper"].shift(1)
+        retest_long = dataframe["low"] <= dataframe["bb_middle"]
+        bounce_long = dataframe["close"] > dataframe["bb_middle"]
         dataframe["entry_long"] = (
+            prev_breakout_long &
+            retest_long &
+            bounce_long &
             (dataframe["close"] > dataframe["ema21"]) &
-            (dataframe["close"] > dataframe["bb_upper"].shift(1)) &
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
             (dataframe["rsi"] >= 45) &
             (dataframe["rsi"] <= 70) &
             (dataframe["atr"] > dataframe["atr_median"])
         )
 
-        # SHORT entry
+        # SHORT entry — retest MA20 setelah breakout BB Lower
+        prev_breakout_short = dataframe["close"].shift(1) < dataframe["bb_lower"].shift(1)
+        retest_short = dataframe["high"] >= dataframe["bb_middle"]
+        bounce_short = dataframe["close"] < dataframe["bb_middle"]
         dataframe["entry_short"] = (
+            prev_breakout_short &
+            retest_short &
+            bounce_short &
             (dataframe["close"] < dataframe["ema21"]) &
-            (dataframe["close"] < dataframe["bb_lower"].shift(1)) &
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
             (dataframe["rsi"] >= 30) &
             (dataframe["rsi"] <= 55) &
