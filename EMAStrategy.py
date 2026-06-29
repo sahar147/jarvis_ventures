@@ -193,25 +193,21 @@ class EMAStrategy(IStrategy):
         )
 
         # LONG entry — EMA alignment 5m + 1H
-        pullback_long = dataframe["low"] <= dataframe["ema7"]
-        bounce_long = dataframe["close"] > dataframe["ema7"]
+        body_long = (dataframe["open"] < dataframe["ema7"]) & (dataframe["close"] > dataframe["ema7"])
         dataframe["entry_long"] = (
             (dataframe["ema7"] > dataframe["ema25"]) &
             (dataframe["ema25"] > dataframe["ema99"]) &
-            pullback_long &
-            bounce_long &
+            body_long &
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
             (dataframe["atr"] > dataframe["atr_median"])
         )
 
         # SHORT entry — EMA alignment 5m + 1H
-        pullback_short = dataframe["high"] >= dataframe["ema7"]
-        bounce_short = dataframe["close"] < dataframe["ema7"]
+        body_short = (dataframe["open"] > dataframe["ema7"]) & (dataframe["close"] < dataframe["ema7"])
         dataframe["entry_short"] = (
             (dataframe["ema7"] < dataframe["ema25"]) &
             (dataframe["ema25"] < dataframe["ema99"]) &
-            pullback_short &
-            bounce_short &
+            body_short &
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
             (dataframe["atr"] > dataframe["atr_median"])
         )
