@@ -166,9 +166,9 @@ class EMAStrategy(IStrategy):
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         # 3 EMA
-        dataframe["ema8"] = ta.EMA(dataframe, timeperiod=8)
-        dataframe["ema21"] = ta.EMA(dataframe, timeperiod=21)
-        dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
+        dataframe["ema7"] = ta.EMA(dataframe, timeperiod=7)
+        dataframe["ema25"] = ta.EMA(dataframe, timeperiod=25)
+        dataframe["ema99"] = ta.EMA(dataframe, timeperiod=99)
 
         # ATR
         dataframe["atr"] = ta.ATR(dataframe, timeperiod=14)
@@ -182,22 +182,22 @@ class EMAStrategy(IStrategy):
 
         # Golden cross: EMA8 cross atas EMA21
         dataframe["golden_cross"] = (
-            (dataframe["ema8"] > dataframe["ema21"]) &
-            (dataframe["ema8"].shift(1) <= dataframe["ema21"].shift(1))
+            (dataframe["ema7"] > dataframe["ema25"]) &
+            (dataframe["ema7"].shift(1) <= dataframe["ema25"].shift(1))
         )
 
         # Death cross: EMA8 cross bawah EMA21
         dataframe["death_cross"] = (
-            (dataframe["ema8"] < dataframe["ema21"]) &
-            (dataframe["ema8"].shift(1) >= dataframe["ema21"].shift(1))
+            (dataframe["ema7"] < dataframe["ema25"]) &
+            (dataframe["ema7"].shift(1) >= dataframe["ema25"].shift(1))
         )
 
         # LONG entry
         dataframe["entry_long"] = (
             (dataframe["golden_cross"]) &
-            (dataframe["ema8"] > dataframe["ema21"]) &
-            (dataframe["ema21"] > dataframe["ema50"]) &
-            (dataframe["close"] > dataframe["ema50"]) &
+            (dataframe["ema7"] > dataframe["ema25"]) &
+            (dataframe["ema25"] > dataframe["ema99"]) &
+            (dataframe["close"] > dataframe["ema99"]) &
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
             (dataframe["rsi"] >= 45) &
             (dataframe["rsi"] <= 70) &
@@ -207,9 +207,9 @@ class EMAStrategy(IStrategy):
         # SHORT entry
         dataframe["entry_short"] = (
             (dataframe["death_cross"]) &
-            (dataframe["ema8"] < dataframe["ema21"]) &
-            (dataframe["ema21"] < dataframe["ema50"]) &
-            (dataframe["close"] < dataframe["ema50"]) &
+            (dataframe["ema7"] < dataframe["ema25"]) &
+            (dataframe["ema25"] < dataframe["ema99"]) &
+            (dataframe["close"] < dataframe["ema99"]) &
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
             (dataframe["rsi"] >= 30) &
             (dataframe["rsi"] <= 55) &
