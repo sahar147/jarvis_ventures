@@ -192,10 +192,26 @@ class EMAStrategy(IStrategy):
             (dataframe["ema7"].shift(1) >= dataframe["ema25"].shift(1))
         )
 
-        # LONG entry — retest/bounce EMA7 (tanpa batas candle)
+        # METODE 1: Cross baru (max 3 candle) + semua indikator
+        recent_golden = (
+            dataframe["golden_cross"] |
+            dataframe["golden_cross"].shift(1) |
+            dataframe["golden_cross"].shift(2)
+        )
+        entry_long_m1 = (
+            recent_golden &
+            (dataframe["ema7"] > dataframe["ema25"]) &
+            (dataframe["ema25"] > dataframe["ema99"]) &
+            (dataframe["close"] > dataframe["ema7"]) &
+            (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
+            (dataframe["rsi"] >= 45) &
+            (dataframe["rsi"] <= 70) &
+            (dataframe["atr"] > dataframe["atr_median"])
+        )
+        # METODE 2: Alignment + retest bounce EMA7 (tanpa batas candle)
         pullback_long = dataframe["low"] <= dataframe["ema7"]
         bounce_long = dataframe["close"] > dataframe["ema7"]
-        dataframe["entry_long"] = (
+        entry_long_m2 = (
             (dataframe["ema7"] > dataframe["ema25"]) &
             (dataframe["ema25"] > dataframe["ema99"]) &
             pullback_long &
@@ -205,11 +221,28 @@ class EMAStrategy(IStrategy):
             (dataframe["rsi"] <= 70) &
             (dataframe["atr"] > dataframe["atr_median"])
         )
+        dataframe["entry_long"] = entry_long_m1 | entry_long_m2
 
-        # SHORT entry — retest/bounce EMA7 (tanpa batas candle)
+        # METODE 1: Cross baru (max 3 candle) + semua indikator
+        recent_death = (
+            dataframe["death_cross"] |
+            dataframe["death_cross"].shift(1) |
+            dataframe["death_cross"].shift(2)
+        )
+        entry_short_m1 = (
+            recent_death &
+            (dataframe["ema7"] < dataframe["ema25"]) &
+            (dataframe["ema25"] < dataframe["ema99"]) &
+            (dataframe["close"] < dataframe["ema7"]) &
+            (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
+            (dataframe["rsi"] >= 30) &
+            (dataframe["rsi"] <= 55) &
+            (dataframe["atr"] > dataframe["atr_median"])
+        )
+        # METODE 2: Alignment + retest bounce EMA7 (tanpa batas candle)
         pullback_short = dataframe["high"] >= dataframe["ema7"]
         bounce_short = dataframe["close"] < dataframe["ema7"]
-        dataframe["entry_short"] = (
+        entry_short_m2 = (
             (dataframe["ema7"] < dataframe["ema25"]) &
             (dataframe["ema25"] < dataframe["ema99"]) &
             pullback_short &
@@ -219,6 +252,7 @@ class EMAStrategy(IStrategy):
             (dataframe["rsi"] <= 55) &
             (dataframe["atr"] > dataframe["atr_median"])
         )
+        dataframe["entry_short"] = entry_short_m1 | entry_short_m2
 
         return dataframe
 
