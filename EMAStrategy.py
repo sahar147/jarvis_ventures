@@ -178,11 +178,11 @@ class EMAStrategy(IStrategy):
         dataframe["ema99"] = ta.EMA(dataframe, timeperiod=99)
 
         # ATR
-        dataframe["atr"] = ta.ATR(dataframe, timeperiod=3)
-        dataframe["atr_median"] = dataframe["atr"].rolling(5).median()
+        dataframe["atr"] = ta.ATR(dataframe, timeperiod=1)
+        dataframe["atr_median"] = dataframe["atr"].rolling(2).median()
 
         # Volume
-        dataframe["volume_ma20"] = dataframe["volume"].rolling(5).mean()
+        dataframe["volume_ma20"] = dataframe["volume"].rolling(3).mean()
 
         # RSI
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
