@@ -164,6 +164,13 @@ class EMAStrategy(IStrategy):
         return self.trade_time_start <= hour < self.trade_time_end
 
 
+    @informative("1h")
+    def populate_indicators_1h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe["ema7"] = ta.EMA(dataframe, timeperiod=7)
+        dataframe["ema25"] = ta.EMA(dataframe, timeperiod=25)
+        dataframe["ema99"] = ta.EMA(dataframe, timeperiod=99)
+        return dataframe
+
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         # 3 EMA
         dataframe["ema7"] = ta.EMA(dataframe, timeperiod=7)
@@ -221,7 +228,7 @@ class EMAStrategy(IStrategy):
             (dataframe["rsi"] <= 70) &
             (dataframe["atr"] > dataframe["atr_median"])
         )
-        dataframe["entry_long"] = entry_long_m1 | entry_long_m2
+        dataframe["entry_long"] = (entry_long_m1 | entry_long_m2) & (dataframe["ema7_1h"] > dataframe["ema25_1h"]) & (dataframe["ema25_1h"] > dataframe["ema99_1h"])
 
         # METODE 1: Cross baru (max 3 candle) + semua indikator
         recent_death = (
@@ -252,7 +259,7 @@ class EMAStrategy(IStrategy):
             (dataframe["rsi"] <= 55) &
             (dataframe["atr"] > dataframe["atr_median"])
         )
-        dataframe["entry_short"] = entry_short_m1 | entry_short_m2
+        dataframe["entry_short"] = (entry_short_m1 | entry_short_m2) & (dataframe["ema7_1h"] < dataframe["ema25_1h"]) & (dataframe["ema25_1h"] < dataframe["ema99_1h"])
 
         return dataframe
 
