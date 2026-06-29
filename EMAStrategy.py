@@ -163,11 +163,6 @@ class EMAStrategy(IStrategy):
         hour = datetime.now(timezone.utc).hour
         return self.trade_time_start <= hour < self.trade_time_end
 
-    @informative("1h")
-    def populate_indicators_1h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
-        dataframe["ema200"] = ta.EMA(dataframe, timeperiod=200)
-        return dataframe
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         # 3 EMA
@@ -226,15 +221,13 @@ class EMAStrategy(IStrategy):
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         dataframe.loc[
             (
-                (dataframe["entry_long"]) &
-                (dataframe["ema50_1h"] > dataframe["ema200_1h"])
+                (dataframe["entry_long"])
             ),
             ["enter_long", "enter_tag"],
         ] = (1, "ema_golden_cross")
         dataframe.loc[
             (
-                (dataframe["entry_short"]) &
-                (dataframe["ema50_1h"] < dataframe["ema200_1h"])
+                (dataframe["entry_short"])
             ),
             ["enter_short", "enter_tag"],
         ] = (1, "ema_death_cross")
