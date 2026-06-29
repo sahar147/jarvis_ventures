@@ -245,20 +245,6 @@ class EMAStrategy(IStrategy):
         dataframe.loc[:, "exit_short"] = 0
         return dataframe
 
-    def custom_stake_amount(self, current_time, current_rate, current_profit,
-                            proposed_stake, min_stake, max_stake, leverage,
-                            entry_tag, side, **kwargs) -> float:
-        try:
-            balance = self.wallets.get_total_stake_amount()
-            if balance >= 50:
-                stake = balance * 0.333
-            else:
-                stake = balance * 0.667
-            return max(min_stake, min(stake, max_stake))
-        except Exception as e:
-            print(f"[StakeAmount] Error: {e}")
-            return proposed_stake
-
     def confirm_trade_entry(self, pair: str, order_type: str, amount: float,
                             rate: float, time_in_force: str, entry_tag: str,
                             side: str, **kwargs) -> bool:
