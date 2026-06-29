@@ -1,8 +1,17 @@
 import json, requests
 from datetime import datetime, timezone
 
-TOKEN = "YOUR_BOT_TOKEN"
-CHAT_ID = "YOUR_CHAT_ID"
+# Cek time_filter dulu
+try:
+    with open("/freqtrade/user_data/jarvis_settings.json") as f:
+        settings = json.load(f)
+    if not settings.get("time_filter", False):
+        exit(0)  # time_filter false = 24 jam, skip notif sesi
+except:
+    exit(0)
+
+TOKEN = "1904228929:AAF8wE3Qc5P0AYL22xlLbG919AuubR3jtQs"
+CHAT_ID = "-1003944452325"
 STATUS_FILE = "/freqtrade/user_data/session.log"
 
 def send_telegram(pesan):
