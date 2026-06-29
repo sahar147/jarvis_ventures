@@ -182,7 +182,7 @@ class EMAStrategy(IStrategy):
         dataframe["atr_median"] = dataframe["atr"].rolling(2).median()
 
         # Volume
-        dataframe["volume_ma20"] = dataframe["volume"].rolling(3).mean()
+        dataframe["volume_ma20"] = dataframe["volume"].rolling(2).mean()
 
         # RSI
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
