@@ -172,10 +172,10 @@ class EMAStrategy(IStrategy):
 
         # ATR
         dataframe["atr"] = ta.ATR(dataframe, timeperiod=1)
-        dataframe["atr_median"] = dataframe["atr"].rolling(2).median()
+        dataframe["atr_median"] = dataframe["atr"].rolling(7).median()
 
         # Volume
-        dataframe["volume_ma20"] = dataframe["volume"].rolling(2).mean()
+        dataframe["volume_ma20"] = dataframe["volume"].rolling(7).mean()
 
         # RSI
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
@@ -193,8 +193,8 @@ class EMAStrategy(IStrategy):
         )
 
         # LONG entry — EMA alignment 5m + 1H
-        pullback_long = dataframe["low"] <= dataframe["ema25"]
-        bounce_long = dataframe["close"] > dataframe["ema25"]
+        pullback_long = dataframe["low"] <= dataframe["ema7"]
+        bounce_long = dataframe["close"] > dataframe["ema7"]
         dataframe["entry_long"] = (
             (dataframe["ema7"] > dataframe["ema25"]) &
             (dataframe["ema25"] > dataframe["ema99"]) &
@@ -205,8 +205,8 @@ class EMAStrategy(IStrategy):
         )
 
         # SHORT entry — EMA alignment 5m + 1H
-        pullback_short = dataframe["high"] >= dataframe["ema25"]
-        bounce_short = dataframe["close"] < dataframe["ema25"]
+        pullback_short = dataframe["high"] >= dataframe["ema7"]
+        bounce_short = dataframe["close"] < dataframe["ema7"]
         dataframe["entry_short"] = (
             (dataframe["ema7"] < dataframe["ema25"]) &
             (dataframe["ema25"] < dataframe["ema99"]) &
