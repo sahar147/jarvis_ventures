@@ -124,8 +124,8 @@ class EMAStrategy(IStrategy):
     INTERFACE_VERSION = 3
     can_short: bool = True
     timeframe = "5m"
-    minimal_roi = {"0": 0.30}
-    stoploss = -0.15
+    minimal_roi = {"0": 0.45}
+    stoploss = -0.225
     trailing_stop = False
     process_only_new_candles = True
     use_exit_signal = True
