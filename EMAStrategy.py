@@ -206,8 +206,6 @@ class EMAStrategy(IStrategy):
             (dataframe["ema7_1h"] > dataframe["ema25_1h"]) &
             (dataframe["ema25_1h"] > dataframe["ema99_1h"]) &
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
-            (dataframe["rsi"] >= 45) &
-            (dataframe["rsi"] <= 70) &
             (dataframe["atr"] > dataframe["atr_median"])
         )
 
@@ -218,8 +216,6 @@ class EMAStrategy(IStrategy):
             (dataframe["ema7_1h"] < dataframe["ema25_1h"]) &
             (dataframe["ema25_1h"] < dataframe["ema99_1h"]) &
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
-            (dataframe["rsi"] >= 30) &
-            (dataframe["rsi"] <= 55) &
             (dataframe["atr"] > dataframe["atr_median"])
         )
 
