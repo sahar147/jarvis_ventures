@@ -172,7 +172,7 @@ class EMAStrategy(IStrategy):
 
         # ATR
         dataframe["atr"] = ta.ATR(dataframe, timeperiod=3)
-        dataframe["atr_median"] = dataframe["atr"].rolling(5).median()
+        dataframe["atr_median"] = dataframe["atr"].rolling(6).median()
 
         # Volume
         dataframe["volume_ma20"] = dataframe["volume"].rolling(3).mean()
@@ -200,7 +200,8 @@ class EMAStrategy(IStrategy):
         )
         pullback_long = dataframe["low"] <= dataframe["ema7"]
         bounce_long = dataframe["close"] > dataframe["ema7"]
-        dataframe["entry_long"] = (
+        # Fallback: langsung entry saat candle cross
+        entry_long_pullback = (
             recent_golden &
             (dataframe["ema7"] > dataframe["ema25"]) &
             (dataframe["ema25"] > dataframe["ema99"]) &
@@ -211,6 +212,17 @@ class EMAStrategy(IStrategy):
             (dataframe["rsi"] <= 70) &
             (dataframe["atr"] > dataframe["atr_median"])
         )
+        entry_long_fallback = (
+            dataframe["golden_cross"] &
+            (dataframe["ema7"] > dataframe["ema25"]) &
+            (dataframe["ema25"] > dataframe["ema99"]) &
+            (dataframe["close"] > dataframe["ema7"]) &
+            (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
+            (dataframe["rsi"] >= 45) &
+            (dataframe["rsi"] <= 70) &
+            (dataframe["atr"] > dataframe["atr_median"])
+        )
+        dataframe["entry_long"] = entry_long_pullback | entry_long_fallback
 
         # SHORT entry — pullback ke EMA7 setelah death cross
         recent_death = (
@@ -220,7 +232,8 @@ class EMAStrategy(IStrategy):
         )
         pullback_short = dataframe["high"] >= dataframe["ema7"]
         bounce_short = dataframe["close"] < dataframe["ema7"]
-        dataframe["entry_short"] = (
+        # Fallback: langsung entry saat candle cross
+        entry_short_pullback = (
             recent_death &
             (dataframe["ema7"] < dataframe["ema25"]) &
             (dataframe["ema25"] < dataframe["ema99"]) &
@@ -231,6 +244,17 @@ class EMAStrategy(IStrategy):
             (dataframe["rsi"] <= 55) &
             (dataframe["atr"] > dataframe["atr_median"])
         )
+        entry_short_fallback = (
+            dataframe["death_cross"] &
+            (dataframe["ema7"] < dataframe["ema25"]) &
+            (dataframe["ema25"] < dataframe["ema99"]) &
+            (dataframe["close"] < dataframe["ema7"]) &
+            (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
+            (dataframe["rsi"] >= 30) &
+            (dataframe["rsi"] <= 55) &
+            (dataframe["atr"] > dataframe["atr_median"])
+        )
+        dataframe["entry_short"] = entry_short_pullback | entry_short_fallback
 
         return dataframe
 
