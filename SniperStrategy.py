@@ -33,7 +33,7 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
             tp_pct = "-2%"
         regime_text = "🟢 BULL" if signal["side"] == "long" else "🔴 BEAR"
         balance = signal.get("balance", 0)
-        stake = balance * 0.333
+        stake = balance * 0.10
         saldo_sl = balance - (stake * 0.15)
         saldo_tp = balance + (stake * 0.30)
         pesan = (
@@ -124,8 +124,8 @@ class SniperStrategy(IStrategy):
     INTERFACE_VERSION = 3
     can_short: bool = True
     timeframe = "5m"
-    minimal_roi = {"0": 0.30}
-    stoploss = -0.15
+    minimal_roi = {"0": 2.0}
+    stoploss = -1.0
     trailing_stop = False
     trailing_stop_positive = 0.0
     trailing_stop_positive_offset = 0.0
@@ -157,10 +157,10 @@ class SniperStrategy(IStrategy):
     def leverage(self, pair: str, current_time, current_rate: float,
                  proposed_leverage: float, max_leverage: float,
                  entry_tag, side: str, **kwargs) -> float:
-        if max_leverage < 15:
+        if max_leverage < 100:
             print(f"[LevFilter] Skip {pair} — max leverage {max_leverage}x < 15x")
             return 1.0
-        return 15.0
+        return 100.0
 
     def is_trading_time(self) -> bool:
         hour = datetime.now(timezone.utc).hour
@@ -278,7 +278,7 @@ class SniperStrategy(IStrategy):
                             entry_tag, side, **kwargs) -> float:
         try:
             balance = self.wallets.get_total_stake_amount()
-            stake = balance * 0.333
+            stake = balance * 0.10
             return max(min_stake, min(stake, max_stake))
         except Exception as e:
             print(f"[StakeAmount] Error: {e}")
