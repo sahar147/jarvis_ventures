@@ -192,24 +192,40 @@ class EMAStrategy(IStrategy):
             (dataframe["ema7"].shift(1) >= dataframe["ema25"].shift(1))
         )
 
-        # LONG entry
+        # LONG entry — pullback ke EMA7 setelah golden cross
+        recent_golden = (
+            dataframe["golden_cross"] |
+            dataframe["golden_cross"].shift(1) |
+            dataframe["golden_cross"].shift(2)
+        )
+        pullback_long = dataframe["low"] <= dataframe["ema7"]
+        bounce_long = dataframe["close"] > dataframe["ema7"]
         dataframe["entry_long"] = (
-            (dataframe["golden_cross"]) &
+            recent_golden &
             (dataframe["ema7"] > dataframe["ema25"]) &
             (dataframe["ema25"] > dataframe["ema99"]) &
-            (dataframe["close"] > dataframe["ema99"]) &
+            pullback_long &
+            bounce_long &
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
             (dataframe["rsi"] >= 45) &
             (dataframe["rsi"] <= 70) &
             (dataframe["atr"] > dataframe["atr_median"])
         )
 
-        # SHORT entry
+        # SHORT entry — pullback ke EMA7 setelah death cross
+        recent_death = (
+            dataframe["death_cross"] |
+            dataframe["death_cross"].shift(1) |
+            dataframe["death_cross"].shift(2)
+        )
+        pullback_short = dataframe["high"] >= dataframe["ema7"]
+        bounce_short = dataframe["close"] < dataframe["ema7"]
         dataframe["entry_short"] = (
-            (dataframe["death_cross"]) &
+            recent_death &
             (dataframe["ema7"] < dataframe["ema25"]) &
             (dataframe["ema25"] < dataframe["ema99"]) &
-            (dataframe["close"] < dataframe["ema99"]) &
+            pullback_short &
+            bounce_short &
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
             (dataframe["rsi"] >= 30) &
             (dataframe["rsi"] <= 55) &
