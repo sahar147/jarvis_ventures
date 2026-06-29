@@ -96,7 +96,7 @@ def send_telegram_exit(token: str, chat_id: str, exit_info: dict):
         if reason == "roi":
             judul = "🎯 *TP HIT*"
             hasil_emoji = "✅"
-        elif reason in ("stop_loss", "trailing_stop_loss"):
+        elif reason in ("stop_loss", "trailing_stop_loss", "stoploss_on_exchange"):
             judul = "🛑 *SL HIT*"
             hasil_emoji = "❌"
         else:
