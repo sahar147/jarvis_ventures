@@ -21,19 +21,19 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
     try:
         if signal["side"] == "long":
             arah = "LONG"
-            sl_price = signal["entry_price"] * 0.99
-            tp_price = signal["entry_price"] * 1.02
-            sl_pct = "-1%"
-            tp_pct = "+2%"
+            sl_price = signal["entry_price"] * 0.985
+            tp_price = signal["entry_price"] * 1.03
+            sl_pct = "-1.5%"
+            tp_pct = "+3%"
         else:
             arah = "SHORT"
-            sl_price = signal["entry_price"] * 1.01
-            tp_price = signal["entry_price"] * 0.98
-            sl_pct = "+1%"
-            tp_pct = "-2%"
+            sl_price = signal["entry_price"] * 1.015
+            tp_price = signal["entry_price"] * 0.97
+            sl_pct = "+1.5%"
+            tp_pct = "-3%"
         regime_text = "🟢 BULL" if signal["side"] == "long" else "🔴 BEAR"
         balance = signal.get("balance", 0)
-        stake = balance * 0.667 if balance < 50 else balance * 0.333
+        stake = balance * 0.444
         saldo_sl = balance - (stake * 0.15)
         saldo_tp = balance + (stake * 0.30)
         pesan = (
