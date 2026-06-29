@@ -33,7 +33,7 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
             tp_pct = "-2%"
         regime_text = "🟢 BULL" if signal["side"] == "long" else "🔴 BEAR"
         balance = signal.get("balance", 0)
-        stake = balance * 0.10
+        stake = balance * 0.333
         saldo_sl = balance - (stake * 0.15)
         saldo_tp = balance + (stake * 0.30)
         pesan = (
@@ -124,8 +124,8 @@ class SniperStrategy(IStrategy):
     INTERFACE_VERSION = 3
     can_short: bool = True
     timeframe = "5m"
-    minimal_roi = {"0": 2.0}
-    stoploss = -1.0
+    minimal_roi = {"0": 0.30}
+    stoploss = -0.15
     trailing_stop = False
     trailing_stop_positive = 0.0
     trailing_stop_positive_offset = 0.0
@@ -157,10 +157,10 @@ class SniperStrategy(IStrategy):
     def leverage(self, pair: str, current_time, current_rate: float,
                  proposed_leverage: float, max_leverage: float,
                  entry_tag, side: str, **kwargs) -> float:
-        if max_leverage < 100:
-            print(f"[LevFilter] Skip {pair} — max leverage {max_leverage}x < 100x")
+        if max_leverage < 15:
+            print(f"[LevFilter] Skip {pair} — max leverage {max_leverage}x < 15x")
             return 1.0
-        return 100.0
+        return 15.0
 
     def is_trading_time(self) -> bool:
         hour = datetime.now(timezone.utc).hour
@@ -229,30 +229,20 @@ class SniperStrategy(IStrategy):
         dataframe["bb_lower"] = lower
         dataframe["bb_middle"] = middle
 
-        # LONG entry — retest MA20 setelah breakout BB Upper
-        prev_breakout_long = dataframe["close"].shift(1) > dataframe["bb_upper"].shift(1)
-        retest_long = dataframe["low"] <= dataframe["bb_middle"]
-        bounce_long = dataframe["close"] > dataframe["bb_middle"]
+        # LONG entry
         dataframe["entry_long"] = (
-            prev_breakout_long &
-            retest_long &
-            bounce_long &
             (dataframe["close"] > dataframe["ema21"]) &
+            (dataframe["close"] > dataframe["bb_upper"].shift(1)) &
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
             (dataframe["rsi"] >= 45) &
             (dataframe["rsi"] <= 70) &
             (dataframe["atr"] > dataframe["atr_median"])
         )
 
-        # SHORT entry — retest MA20 setelah breakout BB Lower
-        prev_breakout_short = dataframe["close"].shift(1) < dataframe["bb_lower"].shift(1)
-        retest_short = dataframe["high"] >= dataframe["bb_middle"]
-        bounce_short = dataframe["close"] < dataframe["bb_middle"]
+        # SHORT entry
         dataframe["entry_short"] = (
-            prev_breakout_short &
-            retest_short &
-            bounce_short &
             (dataframe["close"] < dataframe["ema21"]) &
+            (dataframe["close"] < dataframe["bb_lower"].shift(1)) &
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
             (dataframe["rsi"] >= 30) &
             (dataframe["rsi"] <= 55) &
@@ -288,7 +278,7 @@ class SniperStrategy(IStrategy):
                             entry_tag, side, **kwargs) -> float:
         try:
             balance = self.wallets.get_total_stake_amount()
-            stake = balance * 0.10
+            stake = balance * 0.333
             return max(min_stake, min(stake, max_stake))
         except Exception as e:
             print(f"[StakeAmount] Error: {e}")
