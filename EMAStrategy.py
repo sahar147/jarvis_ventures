@@ -179,7 +179,7 @@ class EMAStrategy(IStrategy):
 
         # ATR
         dataframe["atr"] = ta.ATR(dataframe, timeperiod=3)
-        dataframe["atr_median"] = dataframe["atr"].rolling(6).median()
+        dataframe["atr_median"] = dataframe["atr"].rolling(5).median()
 
         # Volume
         dataframe["volume_ma20"] = dataframe["volume"].rolling(3).mean()
