@@ -164,13 +164,6 @@ class EMAStrategy(IStrategy):
         return self.trade_time_start <= hour < self.trade_time_end
 
 
-    @informative("1h")
-    def populate_indicators_1h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe["ema7"] = ta.EMA(dataframe, timeperiod=7)
-        dataframe["ema25"] = ta.EMA(dataframe, timeperiod=25)
-        dataframe["ema99"] = ta.EMA(dataframe, timeperiod=99)
-        return dataframe
-
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         # 3 EMA
         dataframe["ema7"] = ta.EMA(dataframe, timeperiod=7)
@@ -205,8 +198,6 @@ class EMAStrategy(IStrategy):
         dataframe["entry_long"] = (
             (dataframe["ema7"] > dataframe["ema25"]) &
             (dataframe["ema25"] > dataframe["ema99"]) &
-            (dataframe["ema7_1h"] > dataframe["ema25_1h"]) &
-            (dataframe["ema25_1h"] > dataframe["ema99_1h"]) &
             pullback_long &
             bounce_long &
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
@@ -219,8 +210,6 @@ class EMAStrategy(IStrategy):
         dataframe["entry_short"] = (
             (dataframe["ema7"] < dataframe["ema25"]) &
             (dataframe["ema25"] < dataframe["ema99"]) &
-            (dataframe["ema7_1h"] < dataframe["ema25_1h"]) &
-            (dataframe["ema25_1h"] < dataframe["ema99_1h"]) &
             pullback_short &
             bounce_short &
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
