@@ -258,7 +258,7 @@ class EMAStrategy(IStrategy):
                 "side": side,
                 "entry_price": rate,
                 "rsi": float(last.get("rsi", 0)),
-                "balance": float(self.wallets.get_total_balance("USDT")),
+                "balance": float(self.wallets.get_available_stake_amount() + self.wallets.get_total_stake_amount()),
             }
             if self.tg_token and self.tg_chat_id:
                 send_telegram_signal(self.tg_token, self.tg_chat_id, signal)
@@ -274,7 +274,7 @@ class EMAStrategy(IStrategy):
                 cancel_info = {
                     "pair": pair,
                     "side": "short" if trade.is_short else "long",
-                    "balance": float(self.wallets.get_total_balance("USDT")),
+                    "balance": float(self.wallets.get_available_stake_amount() + self.wallets.get_total_stake_amount()),
                 }
                 send_telegram_cancel(self.tg_token, self.tg_chat_id, cancel_info)
         except Exception as e:
