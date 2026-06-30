@@ -180,6 +180,7 @@ class EMAStrategy(IStrategy):
         # ATR
         dataframe["atr"] = ta.ATR(dataframe, timeperiod=1)
         dataframe["atr_median"] = dataframe["atr"].rolling(7).median()
+        dataframe["atr_max_history"] = dataframe["atr"].shift(1).rolling(7).max()
 
         # Volume
         dataframe["volume_ma20"] = dataframe["volume"].rolling(7).mean()
@@ -212,7 +213,8 @@ class EMAStrategy(IStrategy):
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
             (dataframe["volume"] < dataframe["volume_ma20"] * 2) &
             (dataframe["atr"] > dataframe["atr_median"]) &
-            (dataframe["atr"] < dataframe["atr_median"] * 3)
+            (dataframe["atr"] < dataframe["atr_median"] * 3) &
+            (dataframe["atr_max_history"] < dataframe["atr_median"] * 2.5)
         )
 
         # SHORT entry — EMA alignment 5m + 1H
@@ -228,7 +230,8 @@ class EMAStrategy(IStrategy):
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
             (dataframe["volume"] < dataframe["volume_ma20"] * 2) &
             (dataframe["atr"] > dataframe["atr_median"]) &
-            (dataframe["atr"] < dataframe["atr_median"] * 3)
+            (dataframe["atr"] < dataframe["atr_median"] * 3) &
+            (dataframe["atr_max_history"] < dataframe["atr_median"] * 2.5)
         )
 
         return dataframe
