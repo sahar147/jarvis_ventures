@@ -204,7 +204,8 @@ class EMAStrategy(IStrategy):
             body_long &
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
             (dataframe["volume"] < dataframe["volume_ma20"] * 2) &
-            (dataframe["atr"] > dataframe["atr_median"])
+            (dataframe["atr"] > dataframe["atr_median"]) &
+            (dataframe["atr"] < dataframe["atr_median"] * 3)
         )
 
         # SHORT entry — EMA alignment 5m + 1H
@@ -219,7 +220,8 @@ class EMAStrategy(IStrategy):
             body_short &
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
             (dataframe["volume"] < dataframe["volume_ma20"] * 2) &
-            (dataframe["atr"] > dataframe["atr_median"])
+            (dataframe["atr"] > dataframe["atr_median"]) &
+            (dataframe["atr"] < dataframe["atr_median"] * 3)
         )
 
         return dataframe
