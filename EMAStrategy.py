@@ -206,11 +206,13 @@ class EMAStrategy(IStrategy):
         )
 
         # SHORT entry — EMA alignment 5m + 1H
-        body_short = (dataframe["open"] > dataframe["ema7"]) & (dataframe["close"] < dataframe["ema7"])
+        pullback_short = dataframe["high"] >= dataframe["ema7"]
+        bounce_short = dataframe["close"] < dataframe["ema7"]
         dataframe["entry_short"] = (
             (dataframe["ema7"] < dataframe["ema25"]) &
             (dataframe["ema25"] < dataframe["ema99"]) &
-            body_short &
+            pullback_short &
+            bounce_short &
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
             (dataframe["volume"] < dataframe["volume_ma20"] * 2) &
             (dataframe["atr"] > dataframe["atr_median"])
