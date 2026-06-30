@@ -33,7 +33,7 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
             tp_pct = "-2%"
         regime_text = "🟢 BULL" if signal["side"] == "long" else "🔴 BEAR"
         balance = signal.get("balance", 0)
-        stake = balance * 0.333
+        stake = balance * 0.99
         saldo_sl = balance - (stake * 0.15)
         saldo_tp = balance + (stake * 0.30)
         pesan = (
@@ -193,12 +193,15 @@ class EMAStrategy(IStrategy):
         )
 
         # LONG entry — EMA alignment 5m + 1H
-        body_long = (dataframe["open"] < dataframe["ema7"]) & (dataframe["close"] > dataframe["ema7"])
+        pullback_long = dataframe["low"] <= dataframe["ema7"]
+        bounce_long = dataframe["close"] > dataframe["ema7"]
         dataframe["entry_long"] = (
             (dataframe["ema7"] > dataframe["ema25"]) &
             (dataframe["ema25"] > dataframe["ema99"]) &
-            body_long &
+            pullback_long &
+            bounce_long &
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
+            (dataframe["volume"] < dataframe["volume_ma20"] * 2) &
             (dataframe["atr"] > dataframe["atr_median"])
         )
 
@@ -209,6 +212,7 @@ class EMAStrategy(IStrategy):
             (dataframe["ema25"] < dataframe["ema99"]) &
             body_short &
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
+            (dataframe["volume"] < dataframe["volume_ma20"] * 2) &
             (dataframe["atr"] > dataframe["atr_median"])
         )
 
@@ -254,7 +258,7 @@ class EMAStrategy(IStrategy):
                 "side": side,
                 "entry_price": rate,
                 "rsi": float(last.get("rsi", 0)),
-                "balance": float(self.wallets.get_available_stake_amount() + self.wallets.get_total_stake_amount()),
+                "balance": float(self.wallets._wallets.get(self.config["stake_currency"]).total) if self.wallets._wallets.get(self.config["stake_currency"]) else 0.0,
             }
             if self.tg_token and self.tg_chat_id:
                 send_telegram_signal(self.tg_token, self.tg_chat_id, signal)
@@ -270,7 +274,7 @@ class EMAStrategy(IStrategy):
                 cancel_info = {
                     "pair": pair,
                     "side": "short" if trade.is_short else "long",
-                    "balance": float(self.wallets.get_available_stake_amount() + self.wallets.get_total_stake_amount()),
+                    "balance": float(self.wallets._wallets.get(self.config["stake_currency"]).total) if self.wallets._wallets.get(self.config["stake_currency"]) else 0.0,
                 }
                 send_telegram_cancel(self.tg_token, self.tg_chat_id, cancel_info)
         except Exception as e:
