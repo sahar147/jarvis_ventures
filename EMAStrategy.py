@@ -36,13 +36,20 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
         stake = balance * 0.99
         saldo_sl = balance - (stake * 0.15)
         saldo_tp = balance + (stake * 0.30)
+        vol = signal.get("volume", 0)
+        vol_ma = signal.get("volume_ma", 0)
+        atr_val = signal.get("atr", 0)
+        atr_med = signal.get("atr_med", 0)
+        vol_ratio = (vol / vol_ma) if vol_ma > 0 else 0
+        atr_ratio = (atr_val / atr_med) if atr_med > 0 else 0
         pesan = (
             f"⚡ *ENTRY — JARVIS EMA*\n"
             f"📌 *{signal['pair']}* {arah}\n"
             f"💰 Entry: `{signal['entry_price']:.4f} USDT`\n"
             f"🛡 SL: `{sl_price:.4f} USDT` ({sl_pct})\n"
             f"🎯 TP: `{tp_price:.4f} USDT` ({tp_pct})\n"
-            f"📊 RSI: `{signal['rsi']:.1f}` | Vol: ✅ | ATR: ✅\n"
+            f"📊 Vol: `{vol:.2f}` ({vol_ratio:.2f}x MA7)\n"
+            f"📈 ATR: `{atr_val:.5f}` ({atr_ratio:.2f}x Median)\n"
             f"🌍 Regime: {regime_text}\n"
             f"💼 Saldo: `{balance:.2f}` | SL→`{saldo_sl:.2f}` | TP→`{saldo_tp:.2f}` USDT\n"
             f"━━━━━━━━━━━━━━━━━━\n"
@@ -265,7 +272,10 @@ class EMAStrategy(IStrategy):
                 "pair": pair,
                 "side": side,
                 "entry_price": rate,
-                "rsi": float(last.get("rsi", 0)),
+                "volume": float(last.get("volume", 0)),
+                "volume_ma": float(last.get("volume_ma20", 0)),
+                "atr": float(last.get("atr", 0)),
+                "atr_med": float(last.get("atr_median", 0)),
                 "balance": float(self.wallets._wallets.get(self.config["stake_currency"]).total) if self.wallets._wallets.get(self.config["stake_currency"]) else 0.0,
             }
             if self.tg_token and self.tg_chat_id:
