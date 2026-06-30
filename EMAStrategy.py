@@ -203,7 +203,6 @@ class EMAStrategy(IStrategy):
             bounce_long &
             body_long &
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
-            (dataframe["volume"] < dataframe["volume_ma20"] * 2) &
             (dataframe["atr"] > dataframe["atr_median"])
         )
 
@@ -218,7 +217,6 @@ class EMAStrategy(IStrategy):
             bounce_short &
             body_short &
             (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
-            (dataframe["volume"] < dataframe["volume_ma20"] * 2) &
             (dataframe["atr"] > dataframe["atr_median"])
         )
 
