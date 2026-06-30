@@ -33,7 +33,7 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
             tp_pct = "-2%"
         regime_text = "🟢 BULL" if signal["side"] == "long" else "🔴 BEAR"
         balance = signal.get("balance", 0)
-        stake = balance * 0.666
+        stake = balance * 0.99
         saldo_sl = balance - (stake * 0.15)
         saldo_tp = balance + (stake * 0.30)
         vol = signal.get("volume", 0)
