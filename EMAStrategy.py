@@ -159,6 +159,28 @@ class EMAStrategy(IStrategy):
             self._jarvis_settings = {"time_filter": False}
         self._last_session_notice = None
 
+    def informative_pairs(self):
+        pairs = self.dp.current_whitelist()
+        informative = []
+        for pair in pairs:
+            informative.append((pair, "1h"))
+            informative.append((pair, "4h"))
+        return informative
+
+    def populate_indicators_1h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
+        dataframe["ema200"] = ta.EMA(dataframe, timeperiod=200)
+        dataframe["trend_bull"] = dataframe["ema50"] > dataframe["ema200"]
+        dataframe["trend_bear"] = dataframe["ema50"] < dataframe["ema200"]
+        return dataframe
+
+    def populate_indicators_4h(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe["ema50"] = ta.EMA(dataframe, timeperiod=50)
+        dataframe["ema200"] = ta.EMA(dataframe, timeperiod=200)
+        dataframe["trend_bull"] = dataframe["ema50"] > dataframe["ema200"]
+        dataframe["trend_bear"] = dataframe["ema50"] < dataframe["ema200"]
+        return dataframe
+
     def leverage(self, pair: str, current_time, current_rate: float,
                  proposed_leverage: float, max_leverage: float,
                  entry_tag, side: str, **kwargs) -> float:
@@ -178,6 +200,32 @@ class EMAStrategy(IStrategy):
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         # 3 EMA
+        # Merge data 1H dan 4H
+        inf_1h = self.dp.get_pair_dataframe(pair=metadata["pair"], timeframe="1h")
+        inf_4h = self.dp.get_pair_dataframe(pair=metadata["pair"], timeframe="4h")
+
+        if len(inf_1h) > 0:
+            inf_1h["ema50_1h"] = ta.EMA(inf_1h, timeperiod=50)
+            inf_1h["ema200_1h"] = ta.EMA(inf_1h, timeperiod=200)
+            inf_1h = inf_1h[["date", "ema50_1h", "ema200_1h"]].copy()
+            dataframe = dataframe.merge(inf_1h, on="date", how="left")
+            dataframe["ema50_1h"] = dataframe["ema50_1h"].ffill()
+            dataframe["ema200_1h"] = dataframe["ema200_1h"].ffill()
+        else:
+            dataframe["ema50_1h"] = 0
+            dataframe["ema200_1h"] = 0
+
+        if len(inf_4h) > 0:
+            inf_4h["ema50_4h"] = ta.EMA(inf_4h, timeperiod=50)
+            inf_4h["ema200_4h"] = ta.EMA(inf_4h, timeperiod=200)
+            inf_4h = inf_4h[["date", "ema50_4h", "ema200_4h"]].copy()
+            dataframe = dataframe.merge(inf_4h, on="date", how="left")
+            dataframe["ema50_4h"] = dataframe["ema50_4h"].ffill()
+            dataframe["ema200_4h"] = dataframe["ema200_4h"].ffill()
+        else:
+            dataframe["ema50_4h"] = 0
+            dataframe["ema200_4h"] = 0
+
         dataframe["ema7"] = ta.EMA(dataframe, timeperiod=7)
         dataframe["ema25"] = ta.EMA(dataframe, timeperiod=25)
         dataframe["ema99"] = ta.EMA(dataframe, timeperiod=99)
@@ -211,16 +259,14 @@ class EMAStrategy(IStrategy):
         bounce_long = dataframe["close"] > dataframe["ema7"]
         body_long = dataframe["open"] < dataframe["ema7"]
         dataframe["entry_long"] = (
-            (dataframe["ema7"] > dataframe["ema25"]) &
-            (dataframe["ema25"] > dataframe["ema99"]) &
             pullback_long &
-            bounce_long &
-            body_long &
             (dataframe["volume3"] > dataframe["volume_ma20"] * self._get_volume_min(metadata["pair"])) &
             (dataframe["volume3"] < dataframe["volume_ma20"] * 2.3) &
             (dataframe["atr"] > dataframe["atr_median"]) &
             (dataframe["atr"] < dataframe["atr_median"] * 3) &
-            (dataframe["atr_max_history"] < dataframe["atr_median"] * 2.5)
+            (dataframe["atr_max_history"] < dataframe["atr_median"] * 2.5) &
+            (dataframe["ema50_1h"] > dataframe["ema200_1h"]) &
+            (dataframe["ema50_4h"] > dataframe["ema200_4h"])
         )
 
         # SHORT entry — EMA alignment 5m + 1H
@@ -228,18 +274,15 @@ class EMAStrategy(IStrategy):
         bounce_short = dataframe["close"] < dataframe["ema7"]
         body_short = dataframe["open"] > dataframe["ema7"]
         dataframe["entry_short"] = (
-            (dataframe["ema7"] < dataframe["ema25"]) &
-            (dataframe["ema25"] < dataframe["ema99"]) &
             pullback_short &
-            bounce_short &
-            body_short &
             (dataframe["volume3"] > dataframe["volume_ma20"] * self._get_volume_min(metadata["pair"])) &
             (dataframe["volume3"] < dataframe["volume_ma20"] * 2.3) &
             (dataframe["atr"] > dataframe["atr_median"]) &
             (dataframe["atr"] < dataframe["atr_median"] * 3) &
-            (dataframe["atr_max_history"] < dataframe["atr_median"] * 2.5)
+            (dataframe["atr_max_history"] < dataframe["atr_median"] * 2.5) &
+            (dataframe["ema50_1h"] < dataframe["ema200_1h"]) &
+            (dataframe["ema50_4h"] < dataframe["ema200_4h"])
         )
-
         return dataframe
 
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
