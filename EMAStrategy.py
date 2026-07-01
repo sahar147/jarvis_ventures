@@ -261,7 +261,7 @@ class EMAStrategy(IStrategy):
         dataframe["entry_long"] = (
             pullback_long &
             (dataframe["volume3"] > dataframe["volume_ma20"] * self._get_volume_min(metadata["pair"])) &
-            (dataframe["volume3"] < dataframe["volume_ma20"] * 2.3) &
+            (dataframe["volume3"] < dataframe["volume_ma20"] * 2.6) &
             (dataframe["atr"] > dataframe["atr_median"]) &
             (dataframe["atr"] < dataframe["atr_median"] * 2.2) &
             (dataframe["atr_max_history"] < dataframe["atr_median"] * 2.5) &
@@ -276,7 +276,7 @@ class EMAStrategy(IStrategy):
         dataframe["entry_short"] = (
             pullback_short &
             (dataframe["volume3"] > dataframe["volume_ma20"] * self._get_volume_min(metadata["pair"])) &
-            (dataframe["volume3"] < dataframe["volume_ma20"] * 2.3) &
+            (dataframe["volume3"] < dataframe["volume_ma20"] * 2.6) &
             (dataframe["atr"] > dataframe["atr_median"]) &
             (dataframe["atr"] < dataframe["atr_median"] * 2.2) &
             (dataframe["atr_max_history"] < dataframe["atr_median"] * 2.5) &
