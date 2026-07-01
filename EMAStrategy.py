@@ -171,6 +171,10 @@ class EMAStrategy(IStrategy):
         return self.trade_time_start <= hour < self.trade_time_end
 
 
+    def _get_volume_min(self, pair: str) -> float:
+        strict_pairs = ['ETH/USDT:USDT', 'SOL/USDT:USDT']
+        return 1.5 if pair in strict_pairs else 1.3
+
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         # 3 EMA
         dataframe["ema7"] = ta.EMA(dataframe, timeperiod=7)
@@ -210,8 +214,8 @@ class EMAStrategy(IStrategy):
             pullback_long &
             bounce_long &
             body_long &
-            (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
-            (dataframe["volume"] < dataframe["volume_ma20"] * 2) &
+            (dataframe["volume"] > dataframe["volume_ma20"] * self._get_volume_min(metadata["pair"])) &
+            (dataframe["volume"] < dataframe["volume_ma20"] * 2.3) &
             (dataframe["atr"] > dataframe["atr_median"]) &
             (dataframe["atr"] < dataframe["atr_median"] * 3) &
             (dataframe["atr_max_history"] < dataframe["atr_median"] * 2.5)
@@ -227,8 +231,8 @@ class EMAStrategy(IStrategy):
             pullback_short &
             bounce_short &
             body_short &
-            (dataframe["volume"] > dataframe["volume_ma20"] * 1.5) &
-            (dataframe["volume"] < dataframe["volume_ma20"] * 2) &
+            (dataframe["volume"] > dataframe["volume_ma20"] * self._get_volume_min(metadata["pair"])) &
+            (dataframe["volume"] < dataframe["volume_ma20"] * 2.3) &
             (dataframe["atr"] > dataframe["atr_median"]) &
             (dataframe["atr"] < dataframe["atr_median"] * 3) &
             (dataframe["atr_max_history"] < dataframe["atr_median"] * 2.5)
