@@ -36,7 +36,7 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
         stake = balance * 0.99
         saldo_sl = balance - (stake * 0.15)
         saldo_tp = balance + (stake * 0.30)
-        vol = signal.get("volume", 0)
+        vol = signal.get("volume3", 0)
         vol_ma = signal.get("volume_ma", 0)
         atr_val = signal.get("atr", 0)
         atr_med = signal.get("atr_med", 0)
@@ -217,8 +217,8 @@ class EMAStrategy(IStrategy):
             body_long &
             (dataframe["volume3"] > dataframe["volume_ma20"] * self._get_volume_min(metadata["pair"])) &
             (dataframe["volume3"] < dataframe["volume_ma20"] * 2.3) &
-            (dataframe["atr"] > dataframe["atr_median"]) &
-            (dataframe["atr"] < dataframe["atr_median"] * 3)
+            (dataframe["atr"] > dataframe["atr_median"] * 1.2) &
+            (dataframe["atr"] < dataframe["atr_median"] * 2.0)
         )
 
         # SHORT entry — EMA alignment 5m + 1H
@@ -233,8 +233,8 @@ class EMAStrategy(IStrategy):
             body_short &
             (dataframe["volume3"] > dataframe["volume_ma20"] * self._get_volume_min(metadata["pair"])) &
             (dataframe["volume3"] < dataframe["volume_ma20"] * 2.3) &
-            (dataframe["atr"] > dataframe["atr_median"]) &
-            (dataframe["atr"] < dataframe["atr_median"] * 3)
+            (dataframe["atr"] > dataframe["atr_median"] * 1.2) &
+            (dataframe["atr"] < dataframe["atr_median"] * 2.0)
         )
 
         return dataframe
@@ -279,6 +279,7 @@ class EMAStrategy(IStrategy):
                 "side": side,
                 "entry_price": rate,
                 "volume": float(last.get("volume", 0)),
+                "volume3": float(last.get("volume3", 0)),
                 "volume_ma": float(last.get("volume_ma20", 0)),
                 "atr": float(last.get("atr", 0)),
                 "atr_med": float(last.get("atr_median", 0)),
