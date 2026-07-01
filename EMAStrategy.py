@@ -131,8 +131,8 @@ class EMAStrategy(IStrategy):
     INTERFACE_VERSION = 3
     can_short: bool = True
     timeframe = "5m"
-    minimal_roi = {"0": 0.30}
-    stoploss = -0.15
+    minimal_roi = {"0": 100}  # disabled, pakai custom_exit
+    stoploss = -0.99  # disabled, pakai custom_stoploss
     trailing_stop = False
     process_only_new_candles = True
     use_exit_signal = True
@@ -161,10 +161,10 @@ class EMAStrategy(IStrategy):
     def leverage(self, pair: str, current_time, current_rate: float,
                  proposed_leverage: float, max_leverage: float,
                  entry_tag, side: str, **kwargs) -> float:
-        if max_leverage < 15:
+        if max_leverage < 10:
             print(f"[LevFilter] Skip {pair} — max leverage {max_leverage}x < 15x")
             return 1.0
-        return 15.0
+        return 10.0
 
     def is_trading_time(self) -> bool:
         hour = datetime.now(timezone.utc).hour
@@ -306,8 +306,42 @@ class EMAStrategy(IStrategy):
             print(f"[Cancel] Error: {e}")
         return True
 
+    def custom_stoploss(self, pair: str, trade, current_time,
+                        current_rate: float, current_profit: float, **kwargs) -> float:
+        try:
+            dataframe, _ = self.dp.get_analyzed_dataframe(pair, self.timeframe)
+            last = dataframe.iloc[-1]
+            atr_med = float(last.get("atr_median", 0))
+            if atr_med > 0:
+                sl_distance = atr_med * 3
+                if trade.is_short:
+                    sl_price = trade.open_rate + sl_distance
+                    return (trade.open_rate - sl_price) / trade.open_rate
+                else:
+                    sl_price = trade.open_rate - sl_distance
+                    return (sl_price - trade.open_rate) / trade.open_rate
+        except Exception as e:
+            print(f"[CustomSL] Error: {e}")
+        return -0.99
+
     def custom_exit(self, pair: str, trade, current_time, current_rate: float,
                     current_profit: float, **kwargs):
+        try:
+            dataframe, _ = self.dp.get_analyzed_dataframe(pair, self.timeframe)
+            last = dataframe.iloc[-1]
+            atr_med = float(last.get("atr_median", 0))
+            if atr_med > 0:
+                tp_distance = atr_med * 6
+                if trade.is_short:
+                    tp_price = trade.open_rate - tp_distance
+                    if current_rate <= tp_price:
+                        return "tp_atr"
+                else:
+                    tp_price = trade.open_rate + tp_distance
+                    if current_rate >= tp_price:
+                        return "tp_atr"
+        except Exception as e:
+            print(f"[CustomTP] Error: {e}")
         return None
 
     def confirm_trade_exit(self, pair: str, trade, order_type: str, amount: float,
