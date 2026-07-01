@@ -263,7 +263,7 @@ class EMAStrategy(IStrategy):
             (dataframe["volume3"] > dataframe["volume_ma20"] * self._get_volume_min(metadata["pair"])) &
             (dataframe["volume3"] < dataframe["volume_ma20"] * 2.3) &
             (dataframe["atr"] > dataframe["atr_median"]) &
-            (dataframe["atr"] < dataframe["atr_median"] * 3) &
+            (dataframe["atr"] < dataframe["atr_median"] * 2.2) &
             (dataframe["atr_max_history"] < dataframe["atr_median"] * 2.5) &
             (dataframe["ema50_1h"] > dataframe["ema200_1h"]) &
             (dataframe["ema50_4h"] > dataframe["ema200_4h"])
@@ -278,7 +278,7 @@ class EMAStrategy(IStrategy):
             (dataframe["volume3"] > dataframe["volume_ma20"] * self._get_volume_min(metadata["pair"])) &
             (dataframe["volume3"] < dataframe["volume_ma20"] * 2.3) &
             (dataframe["atr"] > dataframe["atr_median"]) &
-            (dataframe["atr"] < dataframe["atr_median"] * 3) &
+            (dataframe["atr"] < dataframe["atr_median"] * 2.2) &
             (dataframe["atr_max_history"] < dataframe["atr_median"] * 2.5) &
             (dataframe["ema50_1h"] < dataframe["ema200_1h"]) &
             (dataframe["ema50_4h"] < dataframe["ema200_4h"])
