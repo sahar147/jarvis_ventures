@@ -173,7 +173,7 @@ class EMAStrategy(IStrategy):
 
     def _get_volume_min(self, pair: str) -> float:
         strict_pairs = ['ETH/USDT:USDT', 'SOL/USDT:USDT']
-        return 1.5 if pair in strict_pairs else 1.3
+        return 1.5
 
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         # 3 EMA
@@ -311,9 +311,9 @@ class EMAStrategy(IStrategy):
         try:
             dataframe, _ = self.dp.get_analyzed_dataframe(pair, self.timeframe)
             last = dataframe.iloc[-1]
-            atr_med = float(last.get("atr_median", 0))
-            if atr_med > 0:
-                sl_distance = atr_med * 3
+            atr_val = float(last.get("atr", 0))
+            if atr_val > 0:
+                sl_distance = atr_val * 3
                 if trade.is_short:
                     sl_price = trade.open_rate + sl_distance
                     return (trade.open_rate - sl_price) / trade.open_rate
@@ -329,9 +329,9 @@ class EMAStrategy(IStrategy):
         try:
             dataframe, _ = self.dp.get_analyzed_dataframe(pair, self.timeframe)
             last = dataframe.iloc[-1]
-            atr_med = float(last.get("atr_median", 0))
-            if atr_med > 0:
-                tp_distance = atr_med * 6
+            atr_val = float(last.get("atr", 0))
+            if atr_val > 0:
+                tp_distance = atr_val * 6
                 if trade.is_short:
                     tp_price = trade.open_rate - tp_distance
                     if current_rate <= tp_price:
