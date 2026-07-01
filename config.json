@@ -123,8 +123,8 @@
         "entry": "limit",
         "exit": "market",
         "stoploss": "market",
-        "stoploss_on_exchange": false
+        "stoploss_on_exchange": true
     },
     "strategy": "EMAStrategy",
-    "stoploss_on_exchange": false
+    "stoploss_on_exchange": true
 }
