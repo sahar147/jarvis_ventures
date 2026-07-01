@@ -183,12 +183,13 @@ class EMAStrategy(IStrategy):
         dataframe["ema99"] = ta.EMA(dataframe, timeperiod=99)
 
         # ATR
-        dataframe["atr"] = ta.ATR(dataframe, timeperiod=1)
+        dataframe["atr"] = ta.ATR(dataframe, timeperiod=3)
         dataframe["atr_median"] = dataframe["atr"].rolling(7).median()
         dataframe["atr_max_history"] = dataframe["atr"].shift(1).rolling(7).max()
 
         # Volume
         dataframe["volume_ma20"] = dataframe["volume"].rolling(7).mean()
+        dataframe["volume3"] = dataframe["volume"].rolling(3).mean()
 
         # RSI
         dataframe["rsi"] = ta.RSI(dataframe, timeperiod=14)
@@ -215,8 +216,8 @@ class EMAStrategy(IStrategy):
             pullback_long &
             bounce_long &
             body_long &
-            (dataframe["volume"] > dataframe["volume_ma20"] * self._get_volume_min(metadata["pair"])) &
-            (dataframe["volume"] < dataframe["volume_ma20"] * 2.3) &
+            (dataframe["volume3"] > dataframe["volume_ma20"] * self._get_volume_min(metadata["pair"])) &
+            (dataframe["volume3"] < dataframe["volume_ma20"] * 2.3) &
             (dataframe["atr"] > dataframe["atr_median"]) &
             (dataframe["atr"] < dataframe["atr_median"] * 3) &
             (dataframe["atr_max_history"] < dataframe["atr_median"] * 2.5)
@@ -232,8 +233,8 @@ class EMAStrategy(IStrategy):
             pullback_short &
             bounce_short &
             body_short &
-            (dataframe["volume"] > dataframe["volume_ma20"] * self._get_volume_min(metadata["pair"])) &
-            (dataframe["volume"] < dataframe["volume_ma20"] * 2.3) &
+            (dataframe["volume3"] > dataframe["volume_ma20"] * self._get_volume_min(metadata["pair"])) &
+            (dataframe["volume3"] < dataframe["volume_ma20"] * 2.3) &
             (dataframe["atr"] > dataframe["atr_median"]) &
             (dataframe["atr"] < dataframe["atr_median"] * 3) &
             (dataframe["atr_max_history"] < dataframe["atr_median"] * 2.5)
