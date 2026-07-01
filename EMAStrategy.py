@@ -21,16 +21,16 @@ def send_telegram_signal(token: str, chat_id: str, signal: dict):
     try:
         if signal["side"] == "long":
             arah = "LONG"
-            sl_price = signal["entry_price"] * 0.99
-            tp_price = signal["entry_price"] * 1.02
-            sl_pct = "-1%"
-            tp_pct = "+2%"
+            sl_price = signal["entry_price"] * 0.985
+            tp_price = signal["entry_price"] * 1.03
+            sl_pct = "-1.5%"
+            tp_pct = "+3%"
         else:
             arah = "SHORT"
-            sl_price = signal["entry_price"] * 1.01
-            tp_price = signal["entry_price"] * 0.98
-            sl_pct = "+1%"
-            tp_pct = "-2%"
+            sl_price = signal["entry_price"] * 1.015
+            tp_price = signal["entry_price"] * 0.97
+            sl_pct = "+1.5%"
+            tp_pct = "-3%"
         regime_text = "🟢 BULL" if signal["side"] == "long" else "🔴 BEAR"
         balance = signal.get("balance", 0)
         stake = balance * 0.99
@@ -131,9 +131,10 @@ class EMAStrategy(IStrategy):
     INTERFACE_VERSION = 3
     can_short: bool = True
     timeframe = "5m"
-    minimal_roi = {"0": 100}  # disabled, pakai custom_exit
-    stoploss = -0.99  # disabled, pakai custom_stoploss
+    minimal_roi = {"0": 0.30}
+    stoploss = -0.15
     trailing_stop = False
+    use_custom_stoploss = False
     process_only_new_candles = True
     use_exit_signal = True
     startup_candle_count: int = 200
